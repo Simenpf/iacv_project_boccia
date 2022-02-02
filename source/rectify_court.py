@@ -41,18 +41,19 @@ def get_court_homography(frame, court_ratio, win_width, padding):
     H_resize_inv = np.array([[1/resize_ratio, 0, 0], [0, 1/resize_ratio, 0], [0, 0, 1]])
 
     # Show frame and add callback function for mouseclicks on the frame
-    cv.imshow("Select corners of the court, then press enter...",frame_copy)
-    cv.setMouseCallback("Select corners of the court, then press enter...", select_corner)
+    title = "Select corners of the court, then press enter..."
+    cv.imshow(title,frame_copy)
+    cv.setMouseCallback(title, select_corner)
     
     # Continue showing frame until user presses enter
     while True:
-        cv.imshow("Select corners of the court, then press enter...",frame_copy)
+        cv.imshow(title,frame_copy)
         if cv.waitKey(20) == 13:
             cv.destroyAllWindows()
             break
 
     # Compute homography based on user-selected corners, and their actual positions 
-    corners_selected = [[470, 364], [1374, 394], [1619, 847], [373, 819]] # !!! remove for manual selection     
+    #corners_selected = [[470, 364], [1374, 394], [1619, 847], [373, 819]] # !!! remove for manual selection     
     corners_actual  = np.float32(corners_actual)
     corners_selected = np.float32([corners_selected])
     H = cv.getPerspectiveTransform(corners_selected,corners_actual)

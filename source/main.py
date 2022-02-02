@@ -2,9 +2,11 @@ import imutils
 import cv2 as cv
 import numpy as np
 from rectify_court import get_court_homography
-from blob_detection import add_ball_track
+from blob_detection import detect_balls
 from math import dist
 
+# To separate two balls of same colors we choose the positions that minimize the total distance 
+# moved by the two balls
 def estimate_ball_positions(pos,new_pos):
     for i in range(0,8,2):
         move1 = dist(pos[i],new_pos[i])+dist(pos[i+1],new_pos[i+1])
@@ -16,7 +18,7 @@ def estimate_ball_positions(pos,new_pos):
 
 # Load video feed and first frame
 video = cv.VideoCapture('../media/trimmed_games12_no_ornaments.mp4')
-#video = cv.VideoCapture(0)
+#video = cv.VideoCapture(0) # For testing with webcam
 _, frame = video.read()
 
 # Frame resolution
@@ -24,10 +26,10 @@ frame_width  = frame.shape[1]
 frame_height = frame.shape[0]
 
 # Detection frame scaling (0 to 1, resolution-ratio of frame sent to ball detection algorithm)
-detection_scaling = 1
+detection_scaling = 0.5
 
 # For faster tracking some frames can be skipped (set to zero for tracking all frames)
-skip_frames = 5
+skip_frames = 0
 
 # Screen resolution
 #screen_width  = int(input("Screen width (pixels): "))
@@ -36,8 +38,8 @@ screen_width  = 1920
 screen_height = 1080
 
 # Window resolution
-win_width  = round(screen_width*0.7)
-win_height = round(screen_height*0.7)
+win_width  = round(screen_width*0.5)
+win_height = round(screen_height*0.5)
 
 # Court size
 #court_width  = int(input("Court width (mm): "))
@@ -64,26 +66,26 @@ while True:
 
     # While there are frames in video-feed, run game-tracking
     if success:
-        # Mask out court, so detection is only done on court
+        # Mask out court (+ padding), so detection is only done on court
         frame = cv.bitwise_and(frame, frame ,mask = court_mask)
 
         # Track balls
-        masks, new_ball_positions = add_ball_track(frame, detection_scaling)
+        masks, new_ball_positions = detect_balls(frame, detection_scaling)
         current_ball_positions = [row[-1] for row in ball_positions]
         new_ball_positions = estimate_ball_positions(current_ball_positions,new_ball_positions)
         for i in range(0, len(new_ball_positions)):
             if new_ball_positions[i] != pos_out_of_court:
                 ball_positions[i].append(new_ball_positions[i])
             if len(ball_positions[i])>1:
-                cv.polylines(frame,[np.array(ball_positions[i])],False,ball_colors[i],4)
+                cv.polylines(frame,[np.array(ball_positions[i][max(1,len(ball_positions[i])-20):-1])],False,ball_colors[i],4)
 
         # Rectify court
         rectified_frame = cv.warpPerspective(frame, H, (frame_width, round(frame_width*court_ratio)))        
         rectified_masks = cv.warpPerspective(masks, H, (frame_width, round(frame_width*court_ratio)))
 
         # Display results
-        overview = np.concatenate((rectified_frame, rectified_masks), axis=1)
-        #overview = np.concatenate((frame, masks), axis=1)
+        #overview = np.concatenate((rectified_frame, rectified_masks), axis=1)
+        overview = np.concatenate((frame, masks), axis=1)
         overview = imutils.resize(overview, width=win_width)
         cv.imshow("Rectified Court (press enter to exit...)", overview)
 
