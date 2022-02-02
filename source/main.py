@@ -3,7 +3,16 @@ import cv2 as cv
 import numpy as np
 from rectify_court import get_court_homography
 from blob_detection import add_ball_track
+from math import dist
 
+def estimate_ball_positions(pos,new_pos):
+    for i in range(0,8,2):
+        move1 = dist(pos[i],new_pos[i])+dist(pos[i+1],new_pos[i+1])
+        move2 = dist(pos[i],new_pos[i+1])+dist(pos[i+1],new_pos[i])
+        if move1 > move2:
+            new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
+    return new_pos
+        
 
 # Load video feed and first frame
 video = cv.VideoCapture('../media/trimmed_games12_no_ornaments.mp4')
@@ -18,7 +27,7 @@ frame_height = frame.shape[0]
 detection_scaling = 1
 
 # For faster tracking some frames can be skipped (set to zero for tracking all frames)
-skip_frames = 0
+skip_frames = 5
 
 # Screen resolution
 #screen_width  = int(input("Screen width (pixels): "))
@@ -44,7 +53,7 @@ H, court_mask = get_court_homography(frame, court_ratio, win_width, padding)
 
 # Perform game tracking
 pos_out_of_court = (-1,-1)
-ball_positions = [[],[],[],[],[],[],[],[],[]]
+ball_positions = [[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)]]
 ball_colors = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
 while True:
     # Retrieve next frame of video-feed
@@ -60,6 +69,8 @@ while True:
 
         # Track balls
         masks, new_ball_positions = add_ball_track(frame, detection_scaling)
+        current_ball_positions = [row[-1] for row in ball_positions]
+        new_ball_positions = estimate_ball_positions(current_ball_positions,new_ball_positions)
         for i in range(0, len(new_ball_positions)):
             if new_ball_positions[i] != pos_out_of_court:
                 ball_positions[i].append(new_ball_positions[i])
