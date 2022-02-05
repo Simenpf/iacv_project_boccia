@@ -75,18 +75,18 @@ def detect_balls(frame, detection_scaling):
 
     balls_pos = [(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1)]
     for i in range(0,5):
-        cnts = cv.findContours(frame_masks[i], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[-2]
-        cnts = sorted(cnts, key=cv.contourArea, reverse=True)
+        contours = cv.findContours(frame_masks[i], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[-2]
+        contours = sorted(contours, key=cv.contourArea, reverse=True)
         if i != 4:
-            for j in range(0, min(2,len(cnts))):
-                    (x,y), r = cv.minEnclosingCircle(cnts[j])
+            for j in range(0, min(2,len(contours))):
+                    (x,y), r = cv.minEnclosingCircle(contours[j])
                     if r > 15:
                         pos = np.array([x,y,1])
                         pos = transform_point(pos,H_detection_scaling)
                         balls_pos[i*2+j]= (round(pos[0]),round(pos[1]))
         else:
-            if len(cnts)>0:
-                (x,y), r = cv.minEnclosingCircle(cnts[0])
+            if len(contours)>0:
+                (x,y), r = cv.minEnclosingCircle(contours[0])
                 if r > 10:
                     pos = np.array([x,y,1])
                     pos = transform_point(pos,H_detection_scaling)

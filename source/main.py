@@ -17,7 +17,7 @@ def estimate_ball_positions(pos,new_pos):
         
 
 # Load video feed and first frame
-video = cv.VideoCapture('../media/trimmed_games12_no_ornaments.mp4')
+video = cv.VideoCapture('../media/trimmed_game3_no_ornaments.mp4')
 #video = cv.VideoCapture(0) # For testing with webcam
 _, frame = video.read()
 
@@ -84,8 +84,8 @@ while True:
         rectified_masks = cv.warpPerspective(masks, H, (frame_width, round(frame_width*court_ratio)))
 
         # Display results
-        #overview = np.concatenate((rectified_frame, rectified_masks), axis=1)
-        overview = np.concatenate((frame, masks), axis=1)
+        overview = np.concatenate((rectified_frame, rectified_masks), axis=1)
+        #overview = np.concatenate((frame, masks), axis=1)
         overview = imutils.resize(overview, width=win_width)
         cv.imshow("Rectified Court (press enter to exit...)", overview)
 
@@ -98,3 +98,4 @@ while True:
 # Clean workspace
 video.release()
 cv.destroyAllWindows()
+
