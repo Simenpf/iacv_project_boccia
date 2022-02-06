@@ -1,10 +1,11 @@
 import imutils
 import cv2 as cv
 import numpy as np
-from rectify_court import get_court_homography
-from blob_detection import detect_balls
-from reconstruction_3d import generate_3d_trajectory
 from math import dist
+from blob_detection import detect_balls
+from rectify_court import get_court_homography
+from reconstruction_3d import generate_3d_trajectory
+from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
 
 # To separate two balls of same colors we choose the positions that minimize the total distance 
 # moved by the two balls
@@ -56,7 +57,7 @@ court_ratio = court_width/court_length
 
 # Get court rectifying homography
 padding = 0.1 # The amount of image used from outside court (in fraction of court length)
-H, court_mask, _ = get_court_homography(frame, court_ratio, win_width, padding)
+H, court_mask, corners_selected = get_court_homography(frame, court_ratio, win_width, padding)
 
 # Perform game tracking
 pos_out_of_court = (-1,-1)
@@ -113,8 +114,21 @@ while True:
 video.release()
 cv.destroyAllWindows()
 
-traj_2d = ball_positions[1][frame_i:frame_f]
 
+# Camera Calibration
+board_size = (9,7)
+square_size = 2
+video = cv.VideoCapture('../media/calibration_video_camera2.mp4')
+corners_selected = corners_selected[0]
+corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
+K, dist = getCameraIntrinsics(video,board_size,square_size)
+P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
+print(P)
+
+# Trajectory transformations
+traj_2d = ball_positions[1][frame_i:frame_f]
+print(traj_2d)
 traj_3d = generate_3d_trajectory(P, traj_2d, fps)
+print(traj_3d)
 
 

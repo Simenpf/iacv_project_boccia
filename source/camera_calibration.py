@@ -51,7 +51,7 @@ def getCameraIntrinsics(video,board_size,square_size):
             window_img = imutils.resize(img,width=1000)
             cv.imshow("Calibration",window_img)
             cv.imwrite("checkerboard.jpg",img)
-            cv.waitKey(0)
+            cv.waitKey(9)
         else:
             break
     cv.destroyAllWindows()
@@ -73,37 +73,37 @@ def getCameraProjectionMatrix(camera_intrinsics, distortion_coefficients, true_p
 
 # Testing the functions
 #######################
-# Define chessboard
-board_size = (9,7)
-square_size = 2
+# # Define chessboard
+# board_size = (9,7)
+# square_size = 2
 
-# Load media
-video = cv.VideoCapture('../media/calibration_video_camera2.mp4')
-frame = cv.imread("../media/bocce_game_camera2_reference_frame.jpg")
+# # Load media
+# video = cv.VideoCapture('../media/calibration_video_camera2.mp4')
+# frame = cv.imread("../media/bocce_game_camera2_reference_frame.jpg")
 
-# Define known points in image and world frame
-court_width = 390
-court_length = 202
-court_ratio = court_width/court_length
-_,_,corners_selected = get_court_homography(frame,court_ratio,1000,0)
-corners_selected = corners_selected[0]
-corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
+# # Define known points in image and world frame
+# court_width = 390
+# court_length = 202
+# court_ratio = court_width/court_length
+# _,_,corners_selected = get_court_homography(frame,court_ratio,1000,0)
+# corners_selected = corners_selected[0]
+# corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
 
-# Retrieve intrinsics and extrinsics
-K, dist = getCameraIntrinsics(video,board_size,square_size)
-P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
+# # Retrieve intrinsics and extrinsics
+# K, dist = getCameraIntrinsics(video,board_size,square_size)
+# P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
 
 
-# Draw a known point in the three-dimensional world frame on it projected position
-X = [390+37,-202,110,1]
-x = P.dot(X)
-x /= x[2]
+# # Draw a known point in the three-dimensional world frame on it projected position
+# X = [390+37,-202,110,1]
+# x = P.dot(X)
+# x /= x[2]
 
-frame = cv.imread("../media/bocce_game_camera2_reference_frame.jpg")
-frame = cv.circle(frame,(round(x[0]),round(x[1])),10,(0,0,255),-1)
-frame_small = imutils.resize(frame,width=800)
-cv.imshow("",frame_small)
-cv.waitKey(0)
+# frame = cv.imread("../media/bocce_game_camera2_reference_frame.jpg")
+# frame = cv.circle(frame,(round(x[0]),round(x[1])),10,(0,0,255),-1)
+# frame_small = imutils.resize(frame,width=800)
+# cv.imshow("",frame_small)
+# cv.waitKey(0)
 
 
 
