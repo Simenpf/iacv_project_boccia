@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np
 from rectify_court import get_court_homography
 from blob_detection import detect_balls
+from reconstruction_3d import generate_3d_trajectory
 from math import dist
 
 # To separate two balls of same colors we choose the positions that minimize the total distance 
@@ -108,10 +109,12 @@ while True:
         break
     frame_index += 1
 
-print(ball_positions[1][frame_i:frame_f])
-print(frame_i)
-print(frame_f)
 # Clean workspace
 video.release()
 cv.destroyAllWindows()
+
+traj_2d = ball_positions[1][frame_i:frame_f]
+
+traj_3d = generate_3d_trajectory(P, traj_2d, fps)
+
 
