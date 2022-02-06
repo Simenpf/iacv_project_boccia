@@ -1,12 +1,16 @@
-from re import T
 import numpy as np
 
-g = -9.81
-C = np.ones((3,4))
-print(C)
-
+#Inputs:
 pos = [[1,1],[2,2],[3,3],[4,4],[5,5]]
-t = [1,2,3,4,5]
+C = np.ones((3,4))
+fps = 30
+
+# Constants
+g = -9.81
+dt = 1/fps
+T = (len(pos)-1)*dt
+
+t = np.linspace(0,T, len(pos), dtype = np.float32)
 
 def get_some_D(C, pos, t):
     n = 2*len(pos)
@@ -38,32 +42,27 @@ def give_some_F(C, pos, t):
     F = np.transpose(np.array(F))
     return F
 
-
 def init_states(D,F):
-    #D_T = D.transpose()
-    #D_TD_I = np.linalg.inv(D_T.dot(D))
-    #E = np.dot(np.dot(D_TD_I,D_T),F)
-    #E = np.dot(np.dot(np.linalg.inv(np.dot(D.transpose(),D)),D.transpose()),F)
-    E = np.dot(np.linalg.pinv(D),F)
+    E = np.array(np.dot(np.linalg.pinv(D),F))
+    E = np.transpose(E)
     return E
 
-
-D = get_some_D(C,pos,t)
-print(D.shape)
-print(D)
-#print(D.transpose())
-#F = give_some_F(C,pos,t)
-
-#print(init_states(D,F))
-#print(init_states(D,F).shape)
-
-def real_3d_coordinate(E):
+# returns real world coordinates as list of X coordinates, list of Y coordinates, list of Z coordinates
+def real_3d_coordinate(E, pos, t):
+    X = [0]*len(pos)
+    Y = [0]*len(pos)
+    Z = [0]*len(pos)
     
-    X = E[0] + E[1]*t
-    Y = E[2] + E[3]*t
-    Z = E[4] + E[5]*t + .5*g*t^2
+    for i in range(0, len(pos)):
+        X[i] = E[0] + E[1]*t[i]
+        Y[i] = E[2] + E[3]*t[i]
+        Z[i] = E[4] + E[5]*t[i] + .5*g*t[i]**2
 
     coordinate = [X,Y,Z]
     return coordinate
 
-
+D = get_some_D(C,pos,t)
+F = give_some_F(C,pos,t)
+E = init_states(D,F)
+print(E)
+print(real_3d_coordinate(E,pos,t))
