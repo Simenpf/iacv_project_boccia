@@ -62,7 +62,7 @@ def get_court_homography(frame, court_ratio, win_width, padding):
     court_mask = np.ones((round(frame_width*court_ratio),frame_width), dtype="uint8")
     court_mask = cv.warpPerspective(court_mask, np.linalg.inv(H), (frame_width,frame_height))
     
-    return H, court_mask
+    return H, court_mask, corners_selected
 
 
 
