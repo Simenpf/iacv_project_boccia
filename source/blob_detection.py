@@ -80,7 +80,7 @@ def detect_balls(frame, detection_scaling):
         if i != 4:
             for j in range(0, min(2,len(contours))):
                     (x,y), r = cv.minEnclosingCircle(contours[j])
-                    if r > 15:
+                    if r > 5:
                         pos = np.array([x,y,1])
                         pos = transform_point(pos,H_detection_scaling)
                         balls_pos[i*2+j]= (round(pos[0]),round(pos[1]))

@@ -17,20 +17,23 @@ def estimate_ball_positions(pos,new_pos):
         
 
 # Load video feed and first frame
-video = cv.VideoCapture('../media/bocce_game_camera1_trimmed.mp4')
+video = cv.VideoCapture('../../blue_ball_trimmed.mp4')
+fps = video.get(cv.CAP_PROP_FPS)
+
+
 #video = cv.VideoCapture(0) # For testing with webcam
 #_, frame = video.read()
-frame = cv.imread("../media/bocce_game_camera1_screenshot.jpg")
+frame = cv.imread("../media/bocce_game_camera1_reference_frame.jpg")
 
 # Frame resolution
 frame_width  = frame.shape[1]
 frame_height = frame.shape[0]
 
 # Detection frame scaling (0 to 1, resolution-ratio of frame sent to ball detection algorithm)
-detection_scaling = 0.5
+detection_scaling = 1
 
 # For faster tracking some frames can be skipped (set to zero for tracking all frames)
-skip_frames = 10
+skip_frames = 0
 
 # Screen resolution
 #screen_width  = int(input("Screen width (pixels): "))
@@ -39,8 +42,8 @@ screen_width  = 1920
 screen_height = 1080
 
 # Window resolution
-win_width  = round(screen_width*0.5)
-win_height = round(screen_height*0.5)
+win_width  = round(screen_width*0.6)
+win_height = round(screen_height*0.6)
 
 # Court size
 #court_width  = int(input("Court width (mm): "))
@@ -58,6 +61,7 @@ H, court_mask, _ = get_court_homography(frame, court_ratio, win_width, padding)
 pos_out_of_court = (-1,-1)
 ball_positions = [[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)]]
 ball_colors = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
+frame_index = 0
 while True:
     # Retrieve next frame of video-feed
     success, frame = video.read()
@@ -78,7 +82,8 @@ while True:
             if new_ball_positions[i] != pos_out_of_court:
                 ball_positions[i].append(new_ball_positions[i])
             if len(ball_positions[i])>1:
-                cv.polylines(frame,[np.array(ball_positions[i][max(1,len(ball_positions[i])-20):-1])],False,ball_colors[i],4)
+                #cv.polylines(frame,[np.array(ball_positions[i][max(1,len(ball_positions[i])-20):-1])],False,ball_colors[i],4)
+                cv.polylines(frame,[np.array(ball_positions[i][1:-1])],False,ball_colors[i],4)
 
         # Rectify court
         rectified_frame = cv.warpPerspective(frame, H, (frame_width, round(frame_width*court_ratio)))        
@@ -88,14 +93,24 @@ while True:
         #overview = np.concatenate((rectified_frame, rectified_masks), axis=1)
         overview = np.concatenate((frame, masks), axis=1)
         overview = imutils.resize(overview, width=win_width)
-        cv.imshow("Rectified Court (press enter to exit...)", overview)
+        frame_small = imutils.resize(frame, width=win_width)
+        cv.imshow("Rectified Court (press enter to exit...)", frame_small)
 
         # Quit if user presses enter
-        if cv.waitKey(25) == 13:
+        key = cv.waitKey(25)
+        if key == 13:
             break
+        if key == ord('i'):
+            frame_i = frame_index
+        if key == ord('f'):
+            frame_f = frame_index
     else:
         break
+    frame_index += 1
 
+print(ball_positions[1][frame_i:frame_f])
+print(frame_i)
+print(frame_f)
 # Clean workspace
 video.release()
 cv.destroyAllWindows()
