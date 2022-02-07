@@ -19,9 +19,8 @@ def plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length):
     ax.plot(corners_actual[:,0], corners_actual[:,1], corners_actual[:,2],color='r', label='Goal Region')
 
     # Add the trajectory
-    #ax.plot(traj_2d[:,0],traj_2d[:,1],linestyle='--', marker='o', color='b', label='Ball trajectory')
-    print(traj_3d.shape())
-    ax.plot(traj_3d[:,0],traj_3d[:,1],traj_3d[:,2],linestyle='--', marker='o', color='b', label='Ball trajectory')
+    ax.plot(traj_2d[:,0],traj_2d[:,1],linestyle='--', marker='o', color='m', label='Ball trajectory 2d')
+    ax.plot(traj_3d[:,0],traj_3d[:,1],traj_3d[:,2],linestyle='--', marker='o', color='b', label='Ball trajectory 3d')
     # Display the figure
     plt.xlim(-50, court_width+50)
     plt.ylim(-50-court_length*extra_court_poles, court_length+50)
