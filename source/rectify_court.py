@@ -32,7 +32,7 @@ def get_court_homography(frame, court_ratio, win_width, padding):
     corners_selected = []
     corners_actual = np.array([[0, 0],[round(frame_width*(1-2*padding)), 0],[round(frame_width*(1-2*padding)), round(frame_width*(court_ratio-2*padding))],[0, round(frame_width*(court_ratio-2*padding))]])
     corners_actual += round(frame_width*padding)
-
+    
     # Create a copy of the frame for user to click on
     frame_copy = imutils.resize(frame, width=win_width)
 
@@ -54,7 +54,8 @@ def get_court_homography(frame, court_ratio, win_width, padding):
 
     # Compute homography based on user-selected corners, and their actual positions 
     #corners_selected = [[1453,  608],[1700,  863],[ 163,  890],[ 393,  627]] # For camera 1
-    corners_selected = [[1432,  598],[1657,  837],[ 212,  873],[ 418,  620]] # For camera 2
+    corners_selected = [[1430, 598], [1657, 837], [210, 875], [420, 620]] # For camera 2
+    
     corners_actual  = np.float32(corners_actual)
     corners_selected = np.float32([corners_selected])
     H = cv.getPerspectiveTransform(corners_selected,corners_actual)

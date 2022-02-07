@@ -6,20 +6,18 @@ import numpy as np
 #fps = 30
 
 # Constants
-g = -9.81
+g = -981
 #dt = 1/fps
 #T = (len(traj_2d)-1)*dt
 #t = np.linspace(0,T, len(traj_2d), dtype = np.float32)
 
 
-def generate_3d_trajectory(P, traj_2d, fps):
-    dt = 1/fps
-    T = (len(traj_2d)-1)*dt
-    t = np.linspace(0,T, len(traj_2d), dtype = np.float32)
-    
+def generate_3d_trajectory(P, traj_2d, t):    
     D = get_some_D(P,traj_2d,t)
     F = give_some_F(P,traj_2d,t)
     E = init_states(D,F)
+    print("E:")
+    print(E)
     return real_3d_coordinate(E,traj_2d,t)
 
 #print(generate_3d_trajectory(P,traj_2d,fps))
@@ -33,31 +31,33 @@ def get_some_D(P, traj_2d, t):
     d_3 = [0]*n
     d_4 = [0]*n
     d_5 = [0]*n
-    D = [None]*6*n
     for j in range(0, len(traj_2d)):
         for i in range(0, 2):
-            d_0[2*j+i] = P[i, 0] - traj_2d[j][i]*P[2, 0]
+            d_0[2*j+i] = P[i, 0]      - traj_2d[j][i]*P[2,0]
             d_1[2*j+i] = P[i, 0]*t[j] - traj_2d[j][i]*P[2,0]*t[j]
-            d_2[2*j+i] = P[i, 1] - traj_2d[j][i]*P[2,1]
+            d_2[2*j+i] = P[i, 1]      - traj_2d[j][i]*P[2,1]
             d_3[2*j+i] = P[i, 1]*t[j] - traj_2d[j][i]*P[2,1]*t[j]
-            d_4[2*j+i] = P[i, 2] - traj_2d[j][i]*P[2,2]
+            d_4[2*j+i] = P[i, 2]      - traj_2d[j][i]*P[2,2]
             d_5[2*j+i] = P[i, 2]*t[j] - traj_2d[j][i]*P[2,2]*t[j]
-    D = [d_0, d_1, d_2, d_3, d_4, d_5]
-    D = np.reshape(np.array(D),(n,6))
+
+    D = np.array([d_0, d_1, d_2, d_3, d_4, d_5],dtype=np.float32)
+    D = D.T
+    print("D:")
+    print(D)
     return D
 
 def give_some_F(P, traj_2d, t):
     n = 2*len(traj_2d)
-    F = [0]*n
+    F = np.array([0]*n,dtype=np.float32)
     for j in range(0, len(traj_2d)):
         for i in range(0, 2):
-            F[2*j+i] = traj_2d[j][i]*(0.5*P[2, 2]*g*t[j]**2+1)-(0.5*P[0,2]*g*t[j]**2+P[i,3])
-    F = np.transpose(np.array(F))
+            F[2*j+i] = traj_2d[j][i]*(0.5*P[2, 2]*g*pow(t[j],2)+1)-(0.5*P[0,2]*g*pow(t[j],2)+P[i,3])
+    print("F:")
+    print(F)
     return F
 
 def init_states(D,F):
-    print(np.array(np.dot(np.linalg.pinv(D),F)))
-    E, _, _, _ = np.linalg.lstsq(D, F)
+    E = np.array(np.dot(np.linalg.pinv(D),F))
     return E
 
 def get_E(P, traj_2d, fps):
@@ -67,10 +67,10 @@ def get_E(P, traj_2d, fps):
     t = np.linspace(0,T, len(traj_2d), dtype = np.float32)
     D = get_some_D(P,traj_2d, t)
     F = give_some_F(P, traj_2d, t)
-    print(F)
     return init_states(D,F)
 # returns real world coordinates as list of X coordinates, list of Y coordinates, list of Z coordinates
 def real_3d_coordinate(E, traj_2d, t):
+    #E = [370,-150,-400, 150, 50, 200]
     n = len(traj_2d)
     X = [0]*n
     Y = [0]*n

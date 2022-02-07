@@ -20,9 +20,9 @@ def estimate_ball_positions(pos,new_pos):
         
 
 # Load video feed and first frame
-video = cv.VideoCapture('../media/blue_ball_trimmed.mp4')
+video = cv.VideoCapture('../media/ball_traj.mp4')
 fps = video.get(cv.CAP_PROP_FPS)
-
+dt = 1/fps
 
 #video = cv.VideoCapture(0) # For testing with webcam
 #_, frame = video.read()
@@ -63,8 +63,10 @@ H, court_mask, corners_selected = get_court_homography(frame, court_ratio, win_w
 # Perform game tracking
 pos_out_of_court = [-1,-1]
 ball_positions = [[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]]]
+ball_t = [[0],[0],[0],[0],[0],[0],[0],[0],[0]]
 ball_colors = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
 frame_index = 0
+t = dt
 while True:
     # Retrieve next frame of video-feed
     success, frame = video.read()
@@ -84,6 +86,7 @@ while True:
         for i in range(0, len(new_ball_positions)):
             if new_ball_positions[i] != pos_out_of_court:
                 ball_positions[i].append(new_ball_positions[i])
+                ball_t[i].append(t)
             if len(ball_positions[i])>1:
                 #cv.polylines(frame,[np.array(ball_positions[i][max(1,len(ball_positions[i])-20):-1])],False,ball_colors[i],4)
                 cv.polylines(frame,[np.array(ball_positions[i][1:-1])],False,ball_colors[i],4)
@@ -110,6 +113,8 @@ while True:
     else:
         break
     frame_index += 1
+    t+=dt
+
 
 # Clean workspace
 video.release()
@@ -124,12 +129,21 @@ corners_selected = corners_selected[0]
 corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
 #K, dist = getCameraIntrinsics(video,board_size,square_size)
 #P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
-P = np.array([[-2.74249618e+00, -1.26088193e+00, -4.39866329e-01,  1.44894975e+03],[-4.06703462e-02, -4.68571104e-02, -2.83250460e+00,  6.12231432e+02],[-9.99610184e-05, -1.46552381e-03, -4.86990695e-04,  1.00000000e+00]],dtype=np.float32)
+
+P = np.array([[-2.64369884e+00, -1.23577043e+00, -4.71130751e-01,  1.43258252e+03],
+ [-4.78026920e-03, -1.95656940e-02, -2.74553103e+00,  5.99706109e+02],
+ [-8.11727165e-05, -1.41629246e-03, -4.86481859e-04,  1.00000000e+00]])
 
 # Trajectory transformations
-traj_2d = np.array(ball_positions[1][frame_i:frame_f])
-#traj_3d = generate_3d_trajectory(P, traj_2d, fps)
-#plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length)
 
-print(get_E(P,traj_2d,fps))
+print(frame_i)
+print(frame_f)
+traj_2d = np.array(ball_positions[1][frame_i:frame_f])
+t = np.array(ball_t[1][frame_i:frame_f])
+t = t-t[0]
+
+
+traj_3d = generate_3d_trajectory(P, traj_2d, t)
+#print(get_E(P,traj_2d,fps))
+plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length)
 
