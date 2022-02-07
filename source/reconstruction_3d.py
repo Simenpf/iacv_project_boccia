@@ -49,17 +49,19 @@ def init_states(D,F):
 
 # returns real world coordinates as list of X coordinates, list of Y coordinates, list of Z coordinates
 def real_3d_coordinate(E, traj_2d, t):
-    X = [0]*len(traj_2d)
-    Y = [0]*len(traj_2d)
-    Z = [0]*len(traj_2d)
-    
-    for i in range(0, len(traj_2d)):
+    n = len(traj_2d)
+    X = [0]*n
+    Y = [0]*n
+    Z = [0]*n
+    #traj_3d = np.empty((len(traj_2d),2))
+    traj_3d = [0]*n
+    for i in range(0, n):
         X[i] = E[0] + E[1]*t[i]
         Y[i] = E[2] + E[3]*t[i]
         Z[i] = E[4] + E[5]*t[i] + .5*g*t[i]**2
-
-    coordinate = [X,Y,Z]
-    return coordinate
+        traj_3d[i] = [X[i], Y[i], Z[i]]
+    
+    return traj_3d
 
 
 def generate_3d_trajectory(P, traj_2d, fps):
@@ -71,3 +73,6 @@ def generate_3d_trajectory(P, traj_2d, fps):
     F = give_some_F(P,traj_2d,t)
     E = init_states(D,F)
     return real_3d_coordinate(E,traj_2d,t)
+
+
+print(generate_3d_trajectory(P,traj_2d,fps))
