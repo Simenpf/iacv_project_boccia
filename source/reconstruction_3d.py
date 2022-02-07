@@ -1,16 +1,28 @@
 import numpy as np
 
 #Inputs:
-traj_2d = [[1,1],[2,2],[3,3],[4,4],[5,5]]
-P = np.ones((3,4))
-fps = 30
+#traj_2d = [[1,1],[2,2],[3,3],[4,4],[5,5]]
+#P = np.ones((3,4))
+#fps = 30
 
 # Constants
 g = -9.81
-dt = 1/fps
-T = (len(traj_2d)-1)*dt
+#dt = 1/fps
+#T = (len(traj_2d)-1)*dt
+#t = np.linspace(0,T, len(traj_2d), dtype = np.float32)
 
-t = np.linspace(0,T, len(traj_2d), dtype = np.float32)
+
+def generate_3d_trajectory(P, traj_2d, fps):
+    dt = 1/fps
+    T = (len(traj_2d)-1)*dt
+    t = np.linspace(0,T, len(traj_2d), dtype = np.float32)
+    
+    D = get_some_D(P,traj_2d,t)
+    F = give_some_F(P,traj_2d,t)
+    E = init_states(D,F)
+    return real_3d_coordinate(E,traj_2d,t)
+
+#print(generate_3d_trajectory(P,traj_2d,fps))
 
 def get_some_D(P, traj_2d, t):
     n = 2*len(traj_2d)
@@ -53,26 +65,10 @@ def real_3d_coordinate(E, traj_2d, t):
     X = [0]*n
     Y = [0]*n
     Z = [0]*n
-    #traj_3d = np.empty((len(traj_2d),2))
     traj_3d = [0]*n
     for i in range(0, n):
         X[i] = E[0] + E[1]*t[i]
         Y[i] = E[2] + E[3]*t[i]
         Z[i] = E[4] + E[5]*t[i] + .5*g*t[i]**2
         traj_3d[i] = [X[i], Y[i], Z[i]]
-    
-    return traj_3d
-
-
-def generate_3d_trajectory(P, traj_2d, fps):
-    dt = 1/fps
-    T = (len(traj_2d)-1)*dt
-    t = np.linspace(0,T, len(traj_2d), dtype = np.float32)
-    
-    D = get_some_D(P,traj_2d,t)
-    F = give_some_F(P,traj_2d,t)
-    E = init_states(D,F)
-    return real_3d_coordinate(E,traj_2d,t)
-
-
-print(generate_3d_trajectory(P,traj_2d,fps))
+    return np.array(traj_3d)
