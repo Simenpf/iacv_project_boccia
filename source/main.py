@@ -26,7 +26,7 @@ fps = video.get(cv.CAP_PROP_FPS)
 
 #video = cv.VideoCapture(0) # For testing with webcam
 #_, frame = video.read()
-frame = cv.imread("../media/bocce_game_camera1_reference_frame.jpg")
+frame = cv.imread("../media/bocce_game_camera2_reference_frame.jpg")
 
 # Frame resolution
 frame_width  = frame.shape[1]
