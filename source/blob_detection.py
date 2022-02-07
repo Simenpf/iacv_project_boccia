@@ -73,7 +73,7 @@ def detect_balls(frame, detection_scaling):
     all_masks = cv.bitwise_or(all_masks,frame_masks[4])
 
 
-    balls_pos = [(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1)]
+    balls_pos = [[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1]]
     for i in range(0,5):
         contours = cv.findContours(frame_masks[i], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[-2]
         contours = sorted(contours, key=cv.contourArea, reverse=True)
@@ -83,14 +83,14 @@ def detect_balls(frame, detection_scaling):
                     if r > 5:
                         pos = np.array([x,y,1])
                         pos = transform_point(pos,H_detection_scaling)
-                        balls_pos[i*2+j]= (round(pos[0]),round(pos[1]))
+                        balls_pos[i*2+j]= [round(pos[0]),round(pos[1])]
         else:
             if len(contours)>0:
                 (x,y), r = cv.minEnclosingCircle(contours[0])
                 if r > 10:
                     pos = np.array([x,y,1])
                     pos = transform_point(pos,H_detection_scaling)
-                    balls_pos[8] = (round(pos[0]),round(pos[1]))
+                    balls_pos[8] = [round(pos[0]),round(pos[1])]
 
 
     # Prepare masks for visualization

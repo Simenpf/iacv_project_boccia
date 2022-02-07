@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_3d_trajectory(traj_3d,corners_actual,court_width,court_length):
+def plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length):
     # Set up the 3d figure
     fig = plt.figure(figsize=(7,7))
     ax = fig.add_subplot(111, projection='3d')
@@ -19,7 +19,7 @@ def plot_3d_trajectory(traj_3d,corners_actual,court_width,court_length):
     ax.plot(corners_actual[:,0], corners_actual[:,1], corners_actual[:,2],color='r', label='Goal Region')
 
     # Add the trajectory
-    #ax.plot(traj_3d[:,0],traj_3d[:,1],traj_3d[:,2],linestyle='--', marker='o', color='b', label='Ball trajectory')
+    #ax.plot(traj_2d[:,0],traj_2d[:,1],linestyle='--', marker='o', color='b', label='Ball trajectory')
     ax.plot(traj_3d[0],traj_3d[1],traj_3d[2],linestyle='--', marker='o', color='b', label='Ball trajectory')
 
     # Display the figure

@@ -3,7 +3,7 @@ import cv2 as cv
 import numpy as np
 from math import dist
 from blob_detection import detect_balls
-from visualization import plot_3d_trajectory
+from visualization import plot_trajectory
 from rectify_court import get_court_homography
 from reconstruction_3d import generate_3d_trajectory
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
@@ -20,7 +20,7 @@ def estimate_ball_positions(pos,new_pos):
         
 
 # Load video feed and first frame
-video = cv.VideoCapture('../../blue_ball_trimmed.mp4')
+video = cv.VideoCapture('../media/blue_ball_trimmed.mp4')
 fps = video.get(cv.CAP_PROP_FPS)
 
 
@@ -61,8 +61,8 @@ padding = 0.1 # The amount of image used from outside court (in fraction of cour
 H, court_mask, corners_selected = get_court_homography(frame, court_ratio, win_width, padding)
 
 # Perform game tracking
-pos_out_of_court = (-1,-1)
-ball_positions = [[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)],[(-1,-1)]]
+pos_out_of_court = [-1,-1]
+ball_positions = [[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]]]
 ball_colors = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
 frame_index = 0
 while True:
@@ -122,14 +122,14 @@ square_size = 2
 video = cv.VideoCapture('../media/calibration_video_camera2.mp4')
 corners_selected = corners_selected[0]
 corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
-K, dist = getCameraIntrinsics(video,board_size,square_size)
-P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
+#K, dist = getCameraIntrinsics(video,board_size,square_size)
+#P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
+P = np.array([[-2.74249618e+00, -1.26088193e+00, -4.39866329e-01,  1.44894975e+03],[-4.06703462e-02, -4.68571104e-02, -2.83250460e+00,  6.12231432e+02],[-9.99610184e-05, -1.46552381e-03, -4.86990695e-04,  1.00000000e+00]],dtype=np.float32)
 
 # Trajectory transformations
 traj_2d = ball_positions[1][frame_i:frame_f]
 traj_3d = generate_3d_trajectory(P, traj_2d, fps)
-print(traj_3d)
-plot_3d_trajectory(traj_3d,corners_actual,court_width,court_length)
+plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length)
 
 
 
