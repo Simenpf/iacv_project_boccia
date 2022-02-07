@@ -5,7 +5,7 @@ from math import dist
 from blob_detection import detect_balls
 from visualization import plot_trajectory
 from rectify_court import get_court_homography
-from reconstruction_3d import generate_3d_trajectory
+from reconstruction_3d import generate_3d_trajectory, get_E
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
 
 # To separate two balls of same colors we choose the positions that minimize the total distance 
@@ -128,8 +128,8 @@ P = np.array([[-2.74249618e+00, -1.26088193e+00, -4.39866329e-01,  1.44894975e+0
 
 # Trajectory transformations
 traj_2d = np.array(ball_positions[1][frame_i:frame_f])
-traj_3d = generate_3d_trajectory(P, traj_2d, fps)
-plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length)
+#traj_3d = generate_3d_trajectory(P, traj_2d, fps)
+#plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length)
 
-
+print(get_E(P,traj_2d,fps))
 
