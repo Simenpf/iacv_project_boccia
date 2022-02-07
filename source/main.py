@@ -17,10 +17,11 @@ def estimate_ball_positions(pos,new_pos):
         if move1 > move2:
             new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
     return new_pos
-        
+
+
 
 # Load video feed and first frame
-video = cv.VideoCapture('../media/ball_traj.mp4')
+video = cv.VideoCapture('../media/blue_ball_trimmed.mp4')
 fps = video.get(cv.CAP_PROP_FPS)
 dt = 1/fps
 
@@ -65,7 +66,8 @@ pos_out_of_court = [-1,-1]
 ball_positions = [[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]]]
 ball_t = [[0],[0],[0],[0],[0],[0],[0],[0],[0]]
 ball_colors = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
-frame_index = 0
+frame_index = [0]*9
+keypoints = []
 t = dt
 while True:
     # Retrieve next frame of video-feed
@@ -85,6 +87,7 @@ while True:
         new_ball_positions = estimate_ball_positions(current_ball_positions,new_ball_positions)
         for i in range(0, len(new_ball_positions)):
             if new_ball_positions[i] != pos_out_of_court:
+                frame_index[i] += 1
                 ball_positions[i].append(new_ball_positions[i])
                 ball_t[i].append(t)
             if len(ball_positions[i])>1:
@@ -106,13 +109,10 @@ while True:
         key = cv.waitKey(25)
         if key == 13:
             break
-        if key == ord('i'):
-            frame_i = frame_index
-        if key == ord('f'):
-            frame_f = frame_index
+        if key == ord('c'):
+            keypoints.append(frame_index[1])
     else:
         break
-    frame_index += 1
     t+=dt
 
 
@@ -134,16 +134,19 @@ P = np.array([[-2.64369884e+00, -1.23577043e+00, -4.71130751e-01,  1.43258252e+0
  [-4.78026920e-03, -1.95656940e-02, -2.74553103e+00,  5.99706109e+02],
  [-8.11727165e-05, -1.41629246e-03, -4.86481859e-04,  1.00000000e+00]])
 
+
+
 # Trajectory transformations
+traj_2d = []
+t = []
 
-print(frame_i)
-print(frame_f)
-traj_2d = np.array(ball_positions[1][frame_i:frame_f])
-t = np.array(ball_t[1][frame_i:frame_f])
-t = t-t[0]
+for i in range(1,len(keypoints)):
+    traj_2d.append(ball_positions[1][keypoints[i-1]:keypoints[i]+1])
+    t.append(ball_t[1][keypoints[i-1]:keypoints[i]+1])
+    t[i-1]=[t_k - t[i-1][0] for t_k in t[i-1]]
 
-
-traj_3d = generate_3d_trajectory(P, traj_2d, t)
-#print(get_E(P,traj_2d,fps))
+traj_3d = np.array(generate_3d_trajectory(P, traj_2d[0], t[0]))
+for i in range(1,len(traj_2d)):
+    traj_3d = np.concatenate((traj_3d,generate_3d_trajectory(P, traj_2d[i], t[i])),axis=0)
 plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length)
 
