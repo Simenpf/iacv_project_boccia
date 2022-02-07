@@ -127,7 +127,7 @@ corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],
 P = np.array([[-2.74249618e+00, -1.26088193e+00, -4.39866329e-01,  1.44894975e+03],[-4.06703462e-02, -4.68571104e-02, -2.83250460e+00,  6.12231432e+02],[-9.99610184e-05, -1.46552381e-03, -4.86990695e-04,  1.00000000e+00]],dtype=np.float32)
 
 # Trajectory transformations
-traj_2d = ball_positions[1][frame_i:frame_f]
+traj_2d = np.array(ball_positions[1][frame_i:frame_f])
 traj_3d = generate_3d_trajectory(P, traj_2d, fps)
 plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length)
 
