@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np
 from math import dist
 from blob_detection import detect_balls
+from visualization import plot_3d_trajectory
 from rectify_court import get_court_homography
 from reconstruction_3d import generate_3d_trajectory
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
@@ -123,12 +124,12 @@ corners_selected = corners_selected[0]
 corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
 K, dist = getCameraIntrinsics(video,board_size,square_size)
 P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
-print(P)
 
 # Trajectory transformations
 traj_2d = ball_positions[1][frame_i:frame_f]
-print(traj_2d)
 traj_3d = generate_3d_trajectory(P, traj_2d, fps)
 print(traj_3d)
+plot_3d_trajectory(traj_3d,corners_actual,court_width,court_length)
+
 
 
