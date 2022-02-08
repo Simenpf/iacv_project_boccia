@@ -1,3 +1,4 @@
+from turtle import pos
 import imutils
 import cv2 as cv
 import numpy as np
@@ -18,9 +19,40 @@ def estimate_ball_positions(pos,new_pos):
             new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
     return new_pos
 
+# For manual selection by user of the balls bounces at the ground
+def select_bounces(frame, start_keypoint, traj_2d, win_width):
+    i = 0
+    cv.polylines(frame,[traj_2d],False,(200,170,80),4)
+    keypoints = [start_keypoint]
+    while True:
+        frame_copy = frame.copy()
+        cv.circle(frame_copy,traj_2d[i],10,(0,0,255),-1)
+        for k in keypoints:
+            cv.circle(frame_copy,traj_2d[k-start_keypoint],10,(0,255,0),-1)
+
+        frame_copy = imutils.resize(frame_copy,width=win_width)
+        cv.imshow("",frame_copy)
 
 
-# Load video feed and first frame
+        key = cv.waitKey(25)
+        # Go (b)ack in trajectory
+        if key == ord('b'):
+            i = max(0,i-1)
+        # Go (n)ext in trajectory
+        if key == ord('n'):
+            i = min(len(traj_2d)-1,i+1)
+        # (C)apture keyframe
+        if key == ord('c'):
+            keypoints.append(i+start_keypoint)
+        # Exit selection
+        if key == 13:
+            break
+
+    cv.destroyAllWindows()
+    return keypoints
+            
+
+# Load videofeed and reference frame
 video = cv.VideoCapture('../media/blue_ball_trimmed.mp4')
 fps = video.get(cv.CAP_PROP_FPS)
 dt = 1/fps
@@ -34,14 +66,12 @@ frame_width  = frame.shape[1]
 frame_height = frame.shape[0]
 
 # Detection frame scaling (0 to 1, resolution-ratio of frame sent to ball detection algorithm)
-detection_scaling = 1
+detection_scaling = 0.2
 
 # For faster tracking some frames can be skipped (set to zero for tracking all frames)
 skip_frames = 0
 
 # Screen resolution
-#screen_width  = int(input("Screen width (pixels): "))
-#screen_height = int(input("Screen length (pixels): "))
 screen_width  = 1920
 screen_height = 1080
 
@@ -50,24 +80,35 @@ win_width  = round(screen_width*0.6)
 win_height = round(screen_height*0.6)
 
 # Court size
-#court_width  = int(input("Court width (mm): "))
-#court_length = int(input("Court length (mm): "))
 court_length = 202
 court_width = 390
 court_ratio = court_width/court_length
-
 
 # Get court rectifying homography
 padding = 0.1 # The amount of image used from outside court (in fraction of court length)
 H, court_mask, corners_selected = get_court_homography(frame, court_ratio, win_width, padding)
 
+# Camera Calibration
+board_size = (9,7)
+square_size = 2
+calibration_video = cv.VideoCapture('../media/calibration_video_camera2.mp4')
+corners_selected = corners_selected[0]
+corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
+#K, dist = getCameraIntrinsics(calibration_video,board_size,square_size)
+#P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
+
+P = np.array([[-2.64369884e+00, -1.23577043e+00, -4.71130751e-01,  1.43258252e+03],
+ [-4.78026920e-03, -1.95656940e-02, -2.74553103e+00,  5.99706109e+02],
+ [-8.11727165e-05, -1.41629246e-03, -4.86481859e-04,  1.00000000e+00]])
+
+
 # Perform game tracking
 pos_out_of_court = [-1,-1]
-ball_positions = [[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]],[[-1,-1]]]
-ball_t = [[0],[0],[0],[0],[0],[0],[0],[0],[0]]
+ball_positions = [[pos_out_of_court] for i in range(9)]
+ball_t = [[0] for i in range(9)]
 ball_colors = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
 frame_index = [0]*9
-keypoints = []
+start_keypoint = None
 t = dt
 while True:
     # Retrieve next frame of video-feed
@@ -110,33 +151,21 @@ while True:
         if key == 13:
             break
         if key == ord('c'):
-            keypoints.append(frame_index[1])
+            start_keypoint = frame_index[1]
     else:
         break
     t+=dt
-
 
 # Clean workspace
 video.release()
 cv.destroyAllWindows()
 
-
-# Camera Calibration
-board_size = (9,7)
-square_size = 2
-video = cv.VideoCapture('../media/calibration_video_camera2.mp4')
-corners_selected = corners_selected[0]
-corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
-#K, dist = getCameraIntrinsics(video,board_size,square_size)
-#P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
-
-P = np.array([[-2.64369884e+00, -1.23577043e+00, -4.71130751e-01,  1.43258252e+03],
- [-4.78026920e-03, -1.95656940e-02, -2.74553103e+00,  5.99706109e+02],
- [-8.11727165e-05, -1.41629246e-03, -4.86481859e-04,  1.00000000e+00]])
+# Select keypoints from bouncing manually
+frame = cv.imread("../media/bocce_game_camera2_reference_frame.jpg")
+keypoints = select_bounces(frame,start_keypoint, np.array(ball_positions[1][start_keypoint:-1]),win_width)
 
 
-
-# Trajectory transformations
+# Trajectory estimation
 traj_2d = []
 t = []
 
@@ -148,5 +177,7 @@ for i in range(1,len(keypoints)):
 traj_3d = np.array(generate_3d_trajectory(P, traj_2d[0], t[0]))
 for i in range(1,len(traj_2d)):
     traj_3d = np.concatenate((traj_3d,generate_3d_trajectory(P, traj_2d[i], t[i])),axis=0)
+
+# Plot results
 plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length)
 
