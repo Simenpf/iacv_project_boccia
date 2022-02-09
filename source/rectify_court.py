@@ -53,9 +53,6 @@ def get_court_homography(frame, court_ratio, win_width, padding):
             break
 
     # Compute homography based on user-selected corners, and their actual positions 
-    #corners_selected = [[1453,  608],[1700,  863],[ 163,  890],[ 393,  627]] # For camera 1
-    corners_selected = [[1430, 598], [1657, 837], [210, 875], [420, 620]] # For camera 2
-    
     corners_actual  = np.float32(corners_actual)
     corners_selected = np.float32([corners_selected])
     H = cv.getPerspectiveTransform(corners_selected,corners_actual)

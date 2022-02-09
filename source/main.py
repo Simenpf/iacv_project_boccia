@@ -1,20 +1,19 @@
-from turtle import pos
+import math
 import imutils
 import cv2 as cv
 import numpy as np
-from math import dist
 from blob_detection import detect_balls
 from visualization import plot_trajectory
 from rectify_court import get_court_homography
-from reconstruction_3d import generate_3d_trajectory, get_E
+from reconstruction_3d import generate_3d_trajectory
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
 
 # To separate two balls of same colors we choose the positions that minimize the total distance 
 # moved by the two balls
 def estimate_ball_positions(pos,new_pos):
     for i in range(0,8,2):
-        move1 = dist(pos[i],new_pos[i])+dist(pos[i+1],new_pos[i+1])
-        move2 = dist(pos[i],new_pos[i+1])+dist(pos[i+1],new_pos[i])
+        move1 = math.dist(pos[i],new_pos[i])+math.dist(pos[i+1],new_pos[i+1])
+        move2 = math.dist(pos[i],new_pos[i+1])+math.dist(pos[i+1],new_pos[i])
         if move1 > move2:
             new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
     return new_pos
@@ -52,21 +51,20 @@ def select_bounces(frame, start_keypoint, traj_2d, win_width):
     return keypoints
             
 
-# Load videofeed and reference frame
+# Load reference frame
+frame = cv.imread("../media/bocce_game_camera2_reference_frame.jpg")
+
+# Load videofeed
 video = cv.VideoCapture('../media/blue_ball_trimmed.mp4')
 fps = video.get(cv.CAP_PROP_FPS)
 dt = 1/fps
-
-#video = cv.VideoCapture(0) # For testing with webcam
-#_, frame = video.read()
-frame = cv.imread("../media/bocce_game_camera2_reference_frame.jpg")
 
 # Frame resolution
 frame_width  = frame.shape[1]
 frame_height = frame.shape[0]
 
 # Detection frame scaling (0 to 1, resolution-ratio of frame sent to ball detection algorithm)
-detection_scaling = 0.2
+detection_scaling = 1
 
 # For faster tracking some frames can be skipped (set to zero for tracking all frames)
 skip_frames = 0
@@ -85,8 +83,9 @@ court_width = 390
 court_ratio = court_width/court_length
 
 # Get court rectifying homography
-padding = 0.1 # The amount of image used from outside court (in fraction of court length)
+padding = 0 # The amount of image used from outside court (in fraction of court length)
 H, court_mask, corners_selected = get_court_homography(frame, court_ratio, win_width, padding)
+#_, court_mask, _ = get_court_homography(frame, court_ratio, win_width, padding)
 
 # Camera Calibration
 board_size = (9,7)
@@ -94,13 +93,8 @@ square_size = 2
 calibration_video = cv.VideoCapture('../media/calibration_video_camera2.mp4')
 corners_selected = corners_selected[0]
 corners_actual = np.array([[0, 0, 0],[0, 202, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
-#K, dist = getCameraIntrinsics(calibration_video,board_size,square_size)
-#P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
-
-P = np.array([[-2.64369884e+00, -1.23577043e+00, -4.71130751e-01,  1.43258252e+03],
- [-4.78026920e-03, -1.95656940e-02, -2.74553103e+00,  5.99706109e+02],
- [-8.11727165e-05, -1.41629246e-03, -4.86481859e-04,  1.00000000e+00]])
-
+K, dist = getCameraIntrinsics(calibration_video,board_size,square_size)
+P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
 
 # Perform game tracking
 pos_out_of_court = [-1,-1]

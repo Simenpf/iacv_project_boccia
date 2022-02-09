@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import imutils
+from auto_values import num_calibration_imgs
 from rectify_court import get_court_homography
 
 
@@ -25,7 +26,7 @@ def getCameraIntrinsics(video,board_size,square_size):
     while True:
         # Select cirka 30 frames to be used for calibration
         success, img = video.read()
-        for i in range(0,num_frames//30):
+        for i in range(0,num_frames//num_calibration_imgs):
             success, img = video.read()
 
         # While there are still frames
@@ -50,7 +51,6 @@ def getCameraIntrinsics(video,board_size,square_size):
             # Show the image for manual supervision
             window_img = imutils.resize(img,width=1000)
             cv.imshow("Calibration",window_img)
-            cv.imwrite("checkerboard.jpg",img)
             cv.waitKey(9)
         else:
             break
