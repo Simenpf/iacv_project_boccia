@@ -1,7 +1,7 @@
+import imutils
 import cv2 as cv
 import numpy as np
-import imutils
-from auto_values import num_calibration_imgs
+from configuration import num_calibration_imgs
 from rectify_court import get_court_homography
 
 
@@ -24,7 +24,7 @@ def getCameraIntrinsics(video,board_size,square_size):
     # Load all calibration video and find chessboard corners in the frames
     num_frames = int(video.get(cv.CAP_PROP_FRAME_COUNT))
     while True:
-        # Select cirka 30 frames to be used for calibration
+        # Select a suitable amount of frames for calibrations
         success, img = video.read()
         for i in range(0,num_frames//num_calibration_imgs):
             success, img = video.read()

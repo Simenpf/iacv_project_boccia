@@ -1,7 +1,9 @@
 
+import math
+import imutils
 import cv2 as cv
 import numpy as np
-import imutils
+from configuration import detection_scaling, skip_frames
 from projective_funcs import transform_point
 
 
@@ -98,3 +100,70 @@ def detect_balls(frame, detection_scaling):
     all_masks = imutils.resize(all_masks, width=frame_width)
 
     return all_masks, balls_pos
+
+# To separate two balls of same colors we choose the positions that minimize the total distance 
+# moved by the two balls
+def estimate_ball_positions(pos,new_pos):
+    for i in range(0,8,2):
+        move1 = math.dist(pos[i],new_pos[i])+math.dist(pos[i+1],new_pos[i+1])
+        move2 = math.dist(pos[i],new_pos[i+1])+math.dist(pos[i+1],new_pos[i])
+        if move1 > move2:
+            new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
+    return new_pos
+
+def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt):
+    # Perform game tracking
+    pos_out_of_court = [-1,-1]
+    ball_positions = [[pos_out_of_court] for i in range(9)]
+    ball_times = [[0] for i in range(9)]
+    ball_colors = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
+    frame_index = [0]*9
+    start_keypoint = None
+    t = dt
+    while True:
+        # Retrieve next frame of video-feed
+        success, frame = game_video.read()
+        for i in range(0,skip_frames):
+            success, frame = game_video.read()
+
+
+        # While there are frames in video-feed, run game-tracking
+        if success:
+            # Mask out court (+ padding), so detection is only done on court
+            #frame = cv.bitwise_and(frame, frame ,mask = court_mask)
+
+            # Track balls
+            masks, new_ball_positions = detect_balls(frame, detection_scaling)
+            current_ball_positions = [row[-1] for row in ball_positions]
+            new_ball_positions = estimate_ball_positions(current_ball_positions,new_ball_positions)
+            for i in range(0, len(new_ball_positions)):
+                if new_ball_positions[i] != pos_out_of_court:
+                    frame_index[i] += 1
+                    ball_positions[i].append(new_ball_positions[i])
+                    ball_times[i].append(t)
+                if len(ball_positions[i])>1:
+                    #cv.polylines(frame,[np.array(ball_positions[i][max(1,len(ball_positions[i])-20):-1])],False,ball_colors[i],4)
+                    cv.polylines(frame,[np.array(ball_positions[i][1:-1])],False,ball_colors[i],4)
+
+            # Rectify court
+            rectified_frame = cv.warpPerspective(frame, H, (frame_width, round(frame_width*court_ratio)))        
+            rectified_masks = cv.warpPerspective(masks, H, (frame_width, round(frame_width*court_ratio)))
+
+            # Display results
+            #overview = np.concatenate((rectified_frame, rectified_masks), axis=1)
+            overview = np.concatenate((frame, masks), axis=1)
+            overview = imutils.resize(overview, width=win_width)
+            frame_small = imutils.resize(frame, width=win_width)
+            cv.imshow("Rectified Court (press enter to exit...)", frame_small)
+
+            # Quit if user presses enter
+            key = cv.waitKey(25)
+            if key == 13:
+                break
+            if key == ord('c'):
+                start_keypoint = frame_index[1]
+        else:
+            break
+        t+=dt
+    cv.destroyAllWindows()
+    return ball_positions, ball_times, start_keypoint

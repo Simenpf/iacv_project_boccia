@@ -1,9 +1,8 @@
+import imp
+import imutils
+import cv2 as cv
 import numpy as np
-
-
-# Constants
-g = -981
-
+from configuration import g
 
 
 def generate_3d_trajectory(P, traj_2d, t):    
@@ -47,17 +46,8 @@ def init_states(D,F):
     E = np.array(np.dot(np.linalg.pinv(D),F))
     return E
 
-def get_E(P, traj_2d, fps):
-    dt = 1/fps
-    #traj_2d = [traj_2d[:,1], traj_2d[:,0]] Flip u and v
-    T = (len(traj_2d)-1)*dt
-    t = np.linspace(0,T, len(traj_2d), dtype = np.float32)
-    D = get_some_D(P,traj_2d, t)
-    F = give_some_F(P, traj_2d, t)
-    return init_states(D,F)
 # returns real world coordinates as list of X coordinates, list of Y coordinates, list of Z coordinates
 def real_3d_coordinate(E, traj_2d, t):
-    #E = [370,-150,-400, 150, 50, 200]
     n = len(traj_2d)
     X = [0]*n
     Y = [0]*n
@@ -69,3 +59,36 @@ def real_3d_coordinate(E, traj_2d, t):
         Z[i] = E[4] + E[5]*t[i] + .5*g*t[i]**2
         traj_3d[i] = [X[i], Y[i], Z[i]]
     return np.array(traj_3d)
+
+# For manual selection by user of the balls bounces at the ground
+def select_bounces(frame, start_keypoint, traj_2d, win_width):
+    i = 0
+    cv.polylines(frame,[traj_2d],False,(200,170,80),4)
+    keypoints = [start_keypoint]
+    while True:
+        frame_copy = frame.copy()
+        cv.circle(frame_copy,traj_2d[i],10,(0,0,255),-1)
+        for k in keypoints:
+            cv.circle(frame_copy,traj_2d[k-start_keypoint],10,(0,255,0),-1)
+
+        frame_copy = imutils.resize(frame_copy,width=win_width)
+        cv.imshow("",frame_copy)
+
+
+        key = cv.waitKey(25)
+        # Go (b)ack in trajectory
+        if key == ord('b'):
+            i = max(0,i-1)
+        # Go (n)ext in trajectory
+        if key == ord('n'):
+            i = min(len(traj_2d)-1,i+1)
+        # (C)apture keyframe
+        if key == ord('c'):
+            keypoints.append(i+start_keypoint)
+        # Exit selection
+        if key == 13:
+            break
+
+    cv.destroyAllWindows()
+    return keypoints
+            

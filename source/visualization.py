@@ -19,7 +19,7 @@ def set_axes_equal(ax):
     ax.set_ylim3d([y_middle - plot_radius, y_middle + plot_radius])
     ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
 
-def plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length):
+def plot_trajectory(traj_3d,corners_actual,court_width,court_length):
     # Set up the 3d figure
     fig = plt.figure(figsize=(7,7))
     ax = fig.add_subplot(111, projection='3d')
@@ -43,7 +43,6 @@ def plot_trajectory(traj_2d,traj_3d,corners_actual,court_width,court_length):
     ax.plot_surface(X, Y, Z,alpha=0.3,color='r',edgecolors='r')
 
     # Add the trajectory
-    #ax.plot(traj_2d[:,0],traj_2d[:,1],linestyle='--', marker='o', color='m', label='Ball trajectory 2d',zorder=100)
     ax.plot(traj_3d[:,0],traj_3d[:,1],traj_3d[:,2],linestyle='--', marker='o', color='b', label='Ball trajectory 3d',zorder=100)
     
     # Display the figure
