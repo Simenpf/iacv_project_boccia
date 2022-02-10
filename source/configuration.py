@@ -54,3 +54,5 @@ ball_colors_bgr = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,6
 
 escape_key = 13
 delay_time = 25
+
+ball_score = 10 # points given for each ball closer than opposite team
