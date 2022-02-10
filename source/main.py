@@ -30,8 +30,9 @@ H, court_mask, corners_selected = get_court_homography(court_reference_frame, co
 calibration_video = cv.VideoCapture(calibration_video_path)
 corners_selected = corners_selected[0]
 corners_actual = np.array([[0, 0, 0],[0, court_length, 0],[court_width, court_length, 0],[court_width, 0, 0]],dtype=np.float32)
-K, dist = getCameraIntrinsics(calibration_video,board_size,square_size)
-P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
+#K, dist = getCameraIntrinsics(calibration_video,board_size,square_size)
+#P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
+P = P_auto
 
 # Track balls in video
 ball_positions, ball_times, tracked_frames = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt)

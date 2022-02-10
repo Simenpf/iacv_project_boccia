@@ -1,7 +1,7 @@
 import imutils
 import cv2 as cv
 import numpy as np
-from configuration import escape_key, delay_time, corners_selected_2
+from configuration import escape_key, delay_time, corners_auto
 from projective_funcs import transform_point
 
 
@@ -54,7 +54,7 @@ def get_court_homography(frame, court_ratio, win_width, padding):
             break
 
     # Compute homography based on user-selected corners, and their actual positions 
-    corners_selected = corners_selected_2
+    corners_selected = corners_auto
     corners_actual  = np.float32(corners_actual)
     corners_selected = np.float32([corners_selected])
     H = cv.getPerspectiveTransform(corners_selected,corners_actual)
