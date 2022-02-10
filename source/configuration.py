@@ -13,7 +13,8 @@ corners_selected_2 = [[1430, 598],[1657, 837],[210, 875],[420, 620]]
 
 # Media
 court_reference_frame_path = "../media/bocce_game_camera2_reference_frame.jpg"
-game_video_path = '../../trimmed_trajs.mp4'
+#game_video_path = '../../trimmed_trajs.mp4'
+game_video_path = '../media/blue_ball_trimmed.mp4'
 
 # Calibration configs
 board_size = (9,7)
@@ -39,6 +40,8 @@ padding = 0 # The amount of image used from outside court (in fraction of court 
 g = -981
 
 # Game play 
+number_of_balls = 9
+
 team_1_ball_indexes = [0,1,2,3]
 team_2_ball_indexes = [4,5,6,7]
 ball_score = 10 # points given for each ball closer than opposite team
