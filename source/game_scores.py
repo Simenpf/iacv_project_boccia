@@ -1,6 +1,18 @@
-from cmath import inf
+import numpy as np
 from cv2 import sqrt
+from cmath import inf
+from projective_funcs import transform_point
 from configuration import team_1_ball_indexes, team_2_ball_indexes, court_length, court_width, ball_score
+
+## MODULE INPUTS: 2D trajectory, rectification matrix
+## MODULE OUTPUTS: 1x2 Score vector [Score team 1, Score team 2]
+
+# Get rectified 2d positions from 2d trajectory
+def create_rectified_position_vector(traj_2d, H):
+    rect_pos = [[0] for i in range(0,len(traj_2d))]
+    for i in range(0, len(traj_2d)):
+        rect_pos[i] = transform_point([traj_2d[0], traj_2d[1]], H)
+    return rect_pos
 
 # Check if a position is outside defined court
 def pos_out_of_bounds(pos):
@@ -8,19 +20,6 @@ def pos_out_of_bounds(pos):
     if pos[0]>=0 and pos[0]<=court_length and pos[1]>=0 and pos[1]<=court_width:
         out_of_bounds = False
     return out_of_bounds
-
-# Find the ball closest to the center ball position
-def find_closest_ball(ball_pos):
-    center_ball_pos = ball_pos[-1]
-    closest_ball = None
-    closest_ball_dist = inf
-    for ball in range(len(ball_pos)-1): # go through all balls in court
-        if not pos_out_of_bounds(ball_pos[ball]):
-            dist_from_center_ball = sqrt((ball_pos[ball][0]-center_ball_pos[0])**2+(ball_pos[ball][1]-center_ball_pos[1])**2)
-            if dist_from_center_ball < closest_ball_dist:
-                closest_ball = ball
-                closest_ball_dist = dist_from_center_ball
-    return closest_ball, closest_ball_dist
 
 # Get vector of distances of all team balls from center ball, inf if ball out of bounds
 def get_distances_from_center_ball(ball_pos):
@@ -39,9 +38,9 @@ def find_closest_ball(ball_distances):
     return closest_ball, closest_ball_distance
 
 # Calculate score from the ball positions
-def calculate_score(ball_pos):
+def calculate_score(traj_2d, H):
+    ball_pos = create_rectified_position_vector(traj_2d, H)
     score = [0, 0]
-
     center_ball_pos = ball_pos[-1]
 
     while not pos_out_of_bounds(center_ball_pos):
@@ -58,7 +57,7 @@ def calculate_score(ball_pos):
                 if closest_ball_opposite_team_distance<ball_pos_team_1[ball]:
                     score_count+=1
                 return
-            score[0] += score_count*ball_score
+            score[0] = score_count*ball_score
         # Team 2 has the closest ball
         elif closest_ball in team_2_ball_indexes:
             for ball in team_2_ball_indexes:
@@ -68,7 +67,20 @@ def calculate_score(ball_pos):
                 if closest_ball_opposite_team_distance<ball_pos_team_2[ball]:
                     score_count+=1
                 return
-            score[1] += score_count*ball_score
+            score[1] = score_count*ball_score
         else:
             print('Only center ball on court')
     return score
+
+# OUTDATED: Find the ball closest to the center ball position
+def find_closest_ball(ball_pos):
+    center_ball_pos = ball_pos[-1]
+    closest_ball = None
+    closest_ball_dist = inf
+    for ball in range(len(ball_pos)-1): # go through all balls in court
+        if not pos_out_of_bounds(ball_pos[ball]):
+            dist_from_center_ball = sqrt((ball_pos[ball][0]-center_ball_pos[0])**2+(ball_pos[ball][1]-center_ball_pos[1])**2)
+            if dist_from_center_ball < closest_ball_dist:
+                closest_ball = ball
+                closest_ball_dist = dist_from_center_ball
+    return closest_ball, closest_ball_dist
