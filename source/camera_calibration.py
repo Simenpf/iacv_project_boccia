@@ -1,7 +1,7 @@
 import imutils
 import cv2 as cv
 import numpy as np
-from configuration import num_calibration_imgs
+from configuration import num_calibration_imgs, delay_time
 from rectify_court import get_court_homography
 
 
@@ -51,7 +51,7 @@ def getCameraIntrinsics(video,board_size,square_size):
             # Show the image for manual supervision
             window_img = imutils.resize(img,width=1000)
             cv.imshow("Calibration",window_img)
-            cv.waitKey(9)
+            cv.waitKey(delay_time)
         else:
             break
     cv.destroyAllWindows()

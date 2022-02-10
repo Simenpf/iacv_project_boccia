@@ -1,7 +1,7 @@
 import imutils
 import cv2 as cv
 import numpy as np
-import configuration
+from configuration import escape_key, delay_time, corners_selected_2
 from projective_funcs import transform_point
 
 
@@ -49,11 +49,12 @@ def get_court_homography(frame, court_ratio, win_width, padding):
     # Continue showing frame until user presses enter
     while True:
         cv.imshow(title,frame_copy)
-        if cv.waitKey(20) == 13:
+        if cv.waitKey(delay_time) == escape_key:
             cv.destroyAllWindows()
             break
 
     # Compute homography based on user-selected corners, and their actual positions 
+    corners_selected = corners_selected_2
     corners_actual  = np.float32(corners_actual)
     corners_selected = np.float32([corners_selected])
     H = cv.getPerspectiveTransform(corners_selected,corners_actual)

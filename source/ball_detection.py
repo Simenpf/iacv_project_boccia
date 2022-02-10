@@ -1,9 +1,8 @@
-
 import math
 import imutils
 import cv2 as cv
 import numpy as np
-from configuration import detection_scaling, skip_frames
+from configuration import * 
 from projective_funcs import transform_point
 
 
@@ -14,34 +13,28 @@ def dilate_mask(mask):
 def mask_balls(frame):
     hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-    # Hue of the balls (Found experimentally)
-    blue_hue   = 95
-    orange_hue = 17
-    green_hue  = 50
-    red_hue    = 176 
-    yellow_hue = 30
-
-    range = 4
+    # Range of included hues in both directions
+    hue_range = 4
 
     # Blue ball HSV range
-    low_blue  = np.array([blue_hue-range,100,100])
-    high_blue = np.array([blue_hue+range,255,255])
+    low_blue  = np.array([blue_hue-hue_range,100,100])
+    high_blue = np.array([blue_hue+hue_range,255,255])
 
     # Orange ball HSV range
-    low_orange  = np.array([orange_hue-range,100,100])
-    high_orange = np.array([orange_hue+range,255,255])
+    low_orange  = np.array([orange_hue-hue_range,100,100])
+    high_orange = np.array([orange_hue+hue_range,255,255])
 
     # Green ball HSV range
-    low_green  = np.array([green_hue-range,100,100])
-    high_green = np.array([green_hue+range,255,255])
+    low_green  = np.array([green_hue-hue_range,100,100])
+    high_green = np.array([green_hue+hue_range,255,255])
 
     # Red ball HSV range
-    low_red  = np.array([red_hue-range,60,100])
-    high_red = np.array([red_hue+range,255,255])
+    low_red  = np.array([red_hue-hue_range,100,100])
+    high_red = np.array([red_hue+hue_range,255,255])
 
     # Yellow ball HSV range
-    low_yellow  = np.array([yellow_hue-range,100,100])
-    high_yellow = np.array([yellow_hue+range,255,255])
+    low_yellow  = np.array([yellow_hue-hue_range,100,100])
+    high_yellow = np.array([yellow_hue+hue_range,255,255])
 
     # Create color masks
     mask_blue   = cv.inRange(hsv_frame, low_blue,   high_blue)
@@ -63,9 +56,11 @@ def mask_balls(frame):
 def detect_balls(frame, detection_scaling):
     # Prepare frame for detection
     frame_width = frame.shape[1]
-    H_detection_scaling = np.array([[1/detection_scaling, 0, 0], [0, 1/detection_scaling, 0], [0, 0, 1]])
     frame = cv.blur(frame, (15,15))
     frame = imutils.resize(frame, width=round(frame_width*detection_scaling))
+  
+    # Homography between true frame and downscaled frame
+    H_detection_scaling = np.array([[1/detection_scaling, 0, 0], [0, 1/detection_scaling, 0], [0, 0, 1]])
 
     # Compute masks for frame
     frame_masks = mask_balls(frame)
@@ -76,20 +71,32 @@ def detect_balls(frame, detection_scaling):
 
 
     balls_pos = [[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1]]
+
+    # For each color...
     for i in range(0,5):
+        # Find contours in all the ball masks
         contours = cv.findContours(frame_masks[i], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[-2]
+
+        # Sort the contours from large to small areas
         contours = sorted(contours, key=cv.contourArea, reverse=True)
+
+        # If color is not yellow
         if i != 4:
+            # For one or two balls
             for j in range(0, min(2,len(contours))):
+                    # Find the smallest circle covering the whole contour
                     (x,y), r = cv.minEnclosingCircle(contours[j])
+
                     if r > 5:
                         pos = np.array([x,y,1])
                         pos = transform_point(pos,H_detection_scaling)
                         balls_pos[i*2+j]= [round(pos[0]),round(pos[1])]
         else:
             if len(contours)>0:
+                # Find the smallest circle covering the whole contour
                 (x,y), r = cv.minEnclosingCircle(contours[0])
-                if r > 10:
+
+                if r > 5:
                     pos = np.array([x,y,1])
                     pos = transform_point(pos,H_detection_scaling)
                     balls_pos[8] = [round(pos[0]),round(pos[1])]
@@ -105,8 +112,11 @@ def detect_balls(frame, detection_scaling):
 # moved by the two balls
 def estimate_ball_positions(pos,new_pos):
     for i in range(0,8,2):
+        # Find the total ball movements for the two possible classifications
         move1 = math.dist(pos[i],new_pos[i])+math.dist(pos[i+1],new_pos[i+1])
         move2 = math.dist(pos[i],new_pos[i+1])+math.dist(pos[i+1],new_pos[i])
+
+        # Switch the ball classifications if this reduces the total movement
         if move1 > move2:
             new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
     return new_pos
@@ -114,12 +124,12 @@ def estimate_ball_positions(pos,new_pos):
 def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt):
     # Perform game tracking
     pos_out_of_court = [-1,-1]
-    ball_positions = [[pos_out_of_court] for i in range(9)]
-    ball_times = [[0] for i in range(9)]
-    ball_colors = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
-    frame_index = [0]*9
-    tracked_frames = [[] for i in range(9)]
+    ball_positions   = [[pos_out_of_court] for i in range(9)]
+    ball_times       = [[0] for i in range(9)]
+    tracked_frames   = [[] for i in range(9)]
+    frame_index      = [0]*9
     t = dt
+
     while True:
         # Retrieve next frame of video-feed
         success, frame = game_video.read()
@@ -130,22 +140,29 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
         # While there are frames in video-feed, run game-tracking
         if success:
             frame_copy = frame.copy()
+
             # Mask out court (+ padding), so detection is only done on court
             #frame = cv.bitwise_and(frame, frame ,mask = court_mask)
 
             # Track balls
             masks, new_ball_positions = detect_balls(frame, detection_scaling)
+
+            # Extract current position (last column of 2d-array)
             current_ball_positions = [row[-1] for row in ball_positions]
+
+            # Select order of same colored balls
             new_ball_positions = estimate_ball_positions(current_ball_positions,new_ball_positions)
+
+            # Add trajectory information to outputs
             for i in range(0, len(new_ball_positions)):
                 if new_ball_positions[i] != pos_out_of_court:
-                    frame_index[i] += 1
                     ball_positions[i].append(new_ball_positions[i])
-                    ball_times[i].append(t)
                     tracked_frames[i].append(frame)
+                    ball_times[i].append(t)
+                    frame_index[i] += 1
                 if len(ball_positions[i])>1:
-                    cv.polylines(frame_copy,[np.array(ball_positions[i][max(1,len(ball_positions[i])-20):-1])],False,ball_colors[i],4)
-                    #cv.polylines(frame_copy,[np.array(ball_positions[i][1:-1])],False,ball_colors[i],4)
+                    # Draw a trail behind the ball
+                    cv.polylines(frame_copy,[np.array(ball_positions[i][max(1,len(ball_positions[i])-20):-1])],False,ball_colors_bgr[i],4)
 
             # Rectify court
             rectified_frame = cv.warpPerspective(frame_copy, H, (frame_width, round(frame_width*court_ratio)))        
@@ -159,8 +176,7 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
             cv.imshow("press 'C' to capture the balls(press enter to exit...)", frame_small)
 
             # Quit if user presses enter
-            key = cv.waitKey(25)
-            if key == 13:
+            if cv.waitKey(delay_time) == escape_key:
                 break
         else:
             break

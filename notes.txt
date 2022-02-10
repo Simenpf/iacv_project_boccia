@@ -1,7 +1,6 @@
 Scoring after rectification, by calculating distances etc
 Visualization of 2d positions in goal region
 In main: user interfacing
-Function collecting keypoints for all balls(including start points) from user
 Ball detection optimization: add mask of only court, check colors, check sizes, 
 	- ensure noise from other objects is rejected...
 

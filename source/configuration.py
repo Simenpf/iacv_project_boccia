@@ -41,3 +41,16 @@ g = -981
 # Game play 
 team_1_ball_indexes = [0,1,2,3]
 team_2_ball_indexes = [4,5,6,7]
+
+# Hue of the balls (Found experimentally)
+blue_hue   = 95
+orange_hue = 17
+green_hue  = 50
+red_hue    = 176 
+yellow_hue = 30
+
+# Colors of the balls in (B,G,R)
+ball_colors_bgr = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
+
+escape_key = 13
+delay_time = 25
