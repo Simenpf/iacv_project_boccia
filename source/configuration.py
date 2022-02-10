@@ -3,14 +3,18 @@ import numpy as np
 # Media
 court_reference_frame_path = "../media/bocce_game_camera2_reference_frame.jpg"
 calibration_video_path     = '../media/calibration_video_camera2.mp4'
-game_video_path            = '../../trimmed_trajs.mp4'
-#game_video_path = '../media/blue_ball_trimmed.mp4'
+#game_video_path            = '../../trimmed_trajs.mp4'
+game_video_path = '../media/blue_ball_trimmed.mp4'
 
 # Pre-calculated values
 corners_auto = [[1430, 598],[1657, 837],[210, 875],[420, 620]]
 P_auto = np.array([[-2.64369884e+00, -1.23577043e+00, -4.71130751e-01,  1.43258252e+03],
                    [-4.78026920e-03, -1.95656940e-02, -2.74553103e+00,  5.99706109e+02],
                    [-8.11727165e-05, -1.41629246e-03, -4.86481859e-04,  1.00000000e+00]])
+
+H_auto = np.array([[-2.82651316e+00, -1.29762650e+02,  8.16399783e+04],
+                   [ 4.23040479e+01, -4.01799953e+01, -3.64671513e+04],
+                   [-2.33789673e-04, -2.04295499e-02,  1.00000000e+00]])
 
 # Calibration configs
 board_size = (9,7)
