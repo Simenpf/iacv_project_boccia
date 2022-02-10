@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 from configuration import *
+from game_scores import calculate_score
 from visualization import plot_trajectory
 from rectify_court import get_court_homography
 from ball_detection import get_image_trajectories
@@ -50,4 +51,6 @@ traj_3d = get_all_3d_segements(ball_positions, ball_times, all_keypoints, P)
 # Plot results
 plot_trajectory(traj_3d,corners_actual,court_width,court_length)
 
+# Calculate scores
+#game_score = calculate_score(ball_positions, H)
 

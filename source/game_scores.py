@@ -2,17 +2,19 @@ import numpy as np
 from cv2 import sqrt
 from cmath import inf
 from projective_funcs import transform_point
-from configuration import team_1_ball_indexes, team_2_ball_indexes, court_length, court_width, ball_score
+from configuration import team_1_ball_indexes, team_2_ball_indexes, court_length, court_width, ball_score, number_of_balls
 
-## MODULE INPUTS: 2D trajectory, rectification matrix
+## MODULE INPUTS: 2D image positions, rectification matrix
 ## MODULE OUTPUTS: 1x2 Score vector [Score team 1, Score team 2]
 
-# Get rectified 2d positions from 2d trajectory
-def create_rectified_position_vector(traj_2d, H):
-    rect_pos = [[0] for i in range(0,len(traj_2d))]
-    for i in range(0, len(traj_2d)):
-        rect_pos[i] = transform_point([traj_2d[0], traj_2d[1]], H)
-    return rect_pos
+# Get rectified 2d positions from 2d image positions
+def create_rectified_position_vector(image_positions, H): #9xnx2
+    rect_positions = [[0] in range(0,len(image_positions))]
+    for ball in range(0, number_of_balls):
+        for i in range(0, len(image_positions[ball])):
+            rect_pos = transform_point(image_positions[ball][i], H)
+            rect_positions[ball][i] = [rect_pos[0], rect_pos[1]]
+    return rect_positions
 
 # Check if a position is outside defined court
 def pos_out_of_bounds(pos):
@@ -22,13 +24,13 @@ def pos_out_of_bounds(pos):
     return out_of_bounds
 
 # Get vector of distances of all team balls from center ball, inf if ball out of bounds
-def get_distances_from_center_ball(ball_pos):
-    distances_from_center_ball = [inf]*(len(ball_pos)-1)
-    center_ball_pos = ball_pos[-1]
-    for ball in range(len(ball_pos)-1):
-        if not pos_out_of_bounds(ball_pos[ball]):
+def get_distances_from_center_ball(ball_positions):
+    distances_from_center_ball = [inf]*(len(ball_positions)-1)
+    center_ball_positions = ball_positions[-1]
+    for ball in range(len(ball_positions)-1):
+        if not pos_out_of_bounds(ball_positions[ball]):
             # Calculate distance from center ball to ball
-            distances_from_center_ball[ball] = sqrt((ball_pos[ball][0]-center_ball_pos[0])**2+(ball_pos[ball][1]-center_ball_pos[1])**2)
+            distances_from_center_ball[ball] = sqrt((ball_positions[ball][0]-center_ball_positions[0])**2+(ball_positions[ball][1]-center_ball_positions[1])**2)
     return distances_from_center_ball
 
 # Find the closest ball and its distance from the center ball
@@ -38,33 +40,34 @@ def find_closest_ball(ball_distances):
     return closest_ball, closest_ball_distance
 
 # Calculate score from the ball positions
-def calculate_score(traj_2d, H):
-    ball_pos = create_rectified_position_vector(traj_2d, H)
+def calculate_score(image_pos, H):
     score = [0, 0]
-    center_ball_pos = ball_pos[-1]
+    
+    ball_positions = create_rectified_position_vector(image_pos, H)
+    center_ball_position = ball_positions[-1]
 
-    while not pos_out_of_bounds(center_ball_pos):
-        ball_distances = get_distances_from_center_ball(ball_pos)
+    while not pos_out_of_bounds(center_ball_position):
+        ball_distances = get_distances_from_center_ball(ball_positions)
         closest_ball, closest_ball_distance = find_closest_ball(ball_distances)
-        ball_pos_team_1 = ball_pos[team_1_ball_indexes]
-        ball_pos_team_2 = ball_pos[team_2_ball_indexes]
+        
         score_count = 0
         # Team 1 has the closest ball
         if closest_ball in team_1_ball_indexes:
-            ball_pos_team_1.sort()
+            ball_positions_team_1 = ball_positions[team_1_ball_indexes].sort()
             _, closest_ball_opposite_team_distance = find_closest_ball(ball_distances[team_2_ball_indexes])
-            for ball in range(0, len(ball_pos_team_1)):
-                if closest_ball_opposite_team_distance<ball_pos_team_1[ball]:
+            for ball in range(0, len(ball_positions_team_1)):
+                if closest_ball_opposite_team_distance<ball_positions_team_1[ball]:
                     score_count+=1
                 return
             score[0] = score_count*ball_score
+
         # Team 2 has the closest ball
         elif closest_ball in team_2_ball_indexes:
             for ball in team_2_ball_indexes:
-                ball_pos_team_2.sort()
+                ball_positions_team_2 = ball_positions[team_2_ball_indexes].sort()
                 _, closest_ball_opposite_team_distance = find_closest_ball(ball_distances[team_1_ball_indexes])
-            for ball in range(0, len(ball_pos_team_2)):
-                if closest_ball_opposite_team_distance<ball_pos_team_2[ball]:
+            for ball in range(0, len(ball_positions_team_2)):
+                if closest_ball_opposite_team_distance<ball_positions_team_2[ball]:
                     score_count+=1
                 return
             score[1] = score_count*ball_score
@@ -73,14 +76,23 @@ def calculate_score(traj_2d, H):
     return score
 
 # OUTDATED: Find the ball closest to the center ball position
-def find_closest_ball(ball_pos):
-    center_ball_pos = ball_pos[-1]
+def find_closest_ball(ball_positions):
+    center_ball_position = ball_positions[-1]
     closest_ball = None
     closest_ball_dist = inf
-    for ball in range(len(ball_pos)-1): # go through all balls in court
-        if not pos_out_of_bounds(ball_pos[ball]):
-            dist_from_center_ball = sqrt((ball_pos[ball][0]-center_ball_pos[0])**2+(ball_pos[ball][1]-center_ball_pos[1])**2)
+    for ball in range(len(ball_positions)-1): # go through all balls in court
+        if not pos_out_of_bounds(ball_positions[ball]):
+            dist_from_center_ball = sqrt((ball_positions[ball][0]-center_ball_position[0])**2+(ball_positions[ball][1]-center_ball_position[1])**2)
             if dist_from_center_ball < closest_ball_dist:
                 closest_ball = ball
                 closest_ball_dist = dist_from_center_ball
     return closest_ball, closest_ball_dist
+
+
+
+#game_score = calculate_score(ball_positions, H)
+
+#if game_score[0] > game_score[1]:
+#    print('Team 1 in the lead with score: ' + game_score[0])
+#elif game_score[1] > game_score[0]:
+#    print('Team 2 in the lead with score: ' + game_score[1])
