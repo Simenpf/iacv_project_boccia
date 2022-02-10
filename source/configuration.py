@@ -41,3 +41,4 @@ g = -981
 # Game play 
 team_1_ball_indexes = [0,1,2,3]
 team_2_ball_indexes = [4,5,6,7]
+ball_score = 10 # points given for each ball closer than opposite team
