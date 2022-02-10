@@ -37,3 +37,7 @@ padding = 0 # The amount of image used from outside court (in fraction of court 
 
 # Gravity constant (in cm/ms^2)
 g = -981
+
+# Game play 
+team_1_ball_indexes = [0,1,2,3]
+team_2_ball_indexes = [4,5,6,7]
