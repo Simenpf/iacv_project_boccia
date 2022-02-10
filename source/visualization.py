@@ -1,5 +1,5 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
 def set_axes_equal(ax):
     x_limits = ax.get_xlim3d()
@@ -43,9 +43,11 @@ def plot_trajectory(traj_3d,corners_actual,court_width,court_length):
     ax.plot_surface(X, Y, Z,alpha=0.3,color='r',edgecolors='r')
 
     # Add the trajectory
-    for traj in traj_3d:
+    legends = ["Blue ball 1","Blue ball 2","Orange ball 1","Orange ball 2","Green ball 1","Green ball 2","Red ball 1","Red ball 2","Yellow ball"]
+    colors  = ['darkturquoise','darkturquoise','orange','orange','limegreen','limegreen','red','red','yellow']
+    for i, traj in enumerate(traj_3d):
         if(len(traj)>0):
-            ax.plot(traj[:,0],traj[:,1],traj[:,2],linestyle='--', marker='o', color='b', label='Ball trajectory 3d',zorder=100)
+            ax.plot(traj[:,0],traj[:,1],traj[:,2],linestyle='--', marker='o', color=colors[i], label=legends[i],zorder=100)
     
     # Display the figure
     set_axes_equal(ax)
