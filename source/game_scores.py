@@ -2,19 +2,27 @@ import numpy as np
 from cv2 import sqrt
 from cmath import inf
 from projective_funcs import transform_point
-from configuration import team_1_ball_indexes, team_2_ball_indexes, court_length, court_width, ball_score, number_of_balls
+from configuration import P_auto, team_1_ball_indexes, team_2_ball_indexes, court_length, court_width, ball_score, number_of_balls
 
 ## MODULE INPUTS: 2D image positions, rectification matrix
 ## MODULE OUTPUTS: 1x2 Score vector [Score team 1, Score team 2]
 
 # Get rectified 2d positions from 2d image positions
-def create_rectified_position_vector(image_positions, H): #9xnx2
-    rect_positions = [[0] in range(0,len(image_positions))]
+def create_rectified_position_vector(image_points, H):
+    image_points = np.array(image_points) 
+    image_positions = image_points # find better way of initializing
+    rect_positions = image_points # find better way of initializing
+    
     for ball in range(0, number_of_balls):
-        for i in range(0, len(image_positions[ball])):
+        for i in range(0, len(image_points[ball])):
+            image_positions[ball][i] = image_points[ball][i].append(1) #9xnx2 -> 9xnx3
             rect_pos = transform_point(image_positions[ball][i], H)
             rect_positions[ball][i] = [rect_pos[0], rect_pos[1]]
-    return rect_positions
+    return np.array(rect_positions)
+
+image_points = [[[1,1],[30,30]],[[400,400]],[[100,360],[900,200], [80,240]]]
+H = P_auto
+print(create_rectified_position_vector(image_points, H))
 
 # Check if a position is outside defined court
 def pos_out_of_bounds(pos):
