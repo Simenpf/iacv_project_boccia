@@ -95,3 +95,19 @@ def select_bounces(all_tracked_frames, all_traj_2d, win_width):
     cv.destroyAllWindows()
     return keypoints
             
+def get_all_3d_segements(ball_positions,ball_times, all_keypoints,P):
+    traj_2d = [[] for i in range(9)]
+    traj_3d = [[] for i in range(9)]
+    t = [[] for i in range(9)]
+    for ball in range(0,9):
+        keypoints = all_keypoints[ball]
+        for i in range(1,len(keypoints)):
+            traj_2d[ball].append(ball_positions[ball][keypoints[i-1]:keypoints[i]+1])
+            t[ball].append(ball_times[ball][keypoints[i-1]:keypoints[i]+1])
+            t[ball][i-1]=[t_k - t[ball][i-1][0] for t_k in t[ball][i-1]]
+
+        if len(keypoints)>0:
+            traj_3d[ball] = np.array(generate_3d_trajectory(P, traj_2d[ball][0], t[ball][0])) # Should also return times
+            for i in range(1,len(traj_2d[ball])):
+                traj_3d[ball] = np.concatenate((traj_3d[ball],generate_3d_trajectory(P, traj_2d[ball][i], t[ball][i])),axis=0)
+    return traj_3d

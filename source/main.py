@@ -4,7 +4,7 @@ from configuration import *
 from visualization import plot_trajectory
 from rectify_court import get_court_homography
 from ball_detection import get_image_trajectories
-from reconstruction_3d import generate_3d_trajectory, select_bounces
+from reconstruction_3d import select_bounces, get_all_3d_segements
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
 
 # Window resolution
@@ -33,30 +33,19 @@ corners_actual = np.array([[0, 0, 0],[0, court_length, 0],[court_width, court_le
 K, dist = getCameraIntrinsics(calibration_video,board_size,square_size)
 P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
 
-# Track balls in image
+# Track balls in video
 ball_positions, ball_times, tracked_frames = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt)
 
 # Clean workspace
 game_video.release()
 
-# Select keypoints from bouncing manually
+# Manually select start and end points of parabolas
 all_keypoints = select_bounces(tracked_frames, ball_positions,win_width)
-# 3D Trajectory estimation
-traj_2d = [[] for i in range(9)]
-traj_3d = [[] for i in range(9)]
-t = [[] for i in range(9)]
 
-for ball in range(0,9):
-    keypoints = all_keypoints[ball]
-    for i in range(1,len(keypoints)):
-        traj_2d[ball].append(ball_positions[ball][keypoints[i-1]:keypoints[i]+1])
-        t[ball].append(ball_times[ball][keypoints[i-1]:keypoints[i]+1])
-        t[ball][i-1]=[t_k - t[ball][i-1][0] for t_k in t[ball][i-1]]
-    
-    if len(keypoints)>0:
-        traj_3d[ball] = np.array(generate_3d_trajectory(P, traj_2d[ball][0], t[ball][0])) # Should also return times
-        for i in range(1,len(traj_2d[ball])):
-            traj_3d[ball] = np.concatenate((traj_3d[ball],generate_3d_trajectory(P, traj_2d[ball][i], t[ball][i])),axis=0)
+
+# 3D Trajectory estimation
+traj_3d = get_all_3d_segements(ball_positions, ball_times, all_keypoints, P)
+
 
 # Plot results
 plot_trajectory(traj_3d,corners_actual,court_width,court_length)
