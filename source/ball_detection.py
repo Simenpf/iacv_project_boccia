@@ -156,7 +156,7 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
             overview = np.concatenate((frame_copy, masks), axis=1)
             overview = imutils.resize(overview, width=win_width)
             frame_small = imutils.resize(frame_copy, width=win_width)
-            cv.imshow("Rectified Court (press enter to exit...)", frame_small)
+            cv.imshow("press 'C' to capture the balls(press enter to exit...)", frame_small)
 
             # Quit if user presses enter
             key = cv.waitKey(25)

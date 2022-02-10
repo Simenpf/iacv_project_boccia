@@ -75,7 +75,7 @@ def select_bounces(all_tracked_frames, all_traj_2d, win_width):
                 cv.circle(frame_copy,traj_2d[k-1],10,(0,255,0),-1)
 
             frame_copy = imutils.resize(frame_copy,width=win_width)
-            cv.imshow("",frame_copy)
+            cv.imshow("press 'N'and 'B' to get the lowest point",frame_copy)
 
 
             key = cv.waitKey(25)
