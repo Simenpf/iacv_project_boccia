@@ -2,7 +2,7 @@ import imp
 import imutils
 import cv2 as cv
 import numpy as np
-from configuration import g
+from configuration import g, delay_time, escape_key
 
 
 def generate_3d_trajectory(P, traj_2d, t):    
@@ -78,7 +78,7 @@ def select_bounces(all_tracked_frames, all_traj_2d, win_width):
             cv.imshow("press 'N'and 'B' to get the lowest point",frame_copy)
 
 
-            key = cv.waitKey(25)
+            key = cv.waitKey(delay_time)
             # Go (b)ack in trajectory
             if key == ord('b'):
                 i = max(0,i-1)
@@ -89,7 +89,7 @@ def select_bounces(all_tracked_frames, all_traj_2d, win_width):
             if key == ord('c'):
                 keypoints[ball].append(i+1)
             # Exit selection
-            if key == 13:
+            if key == escape_key:
                 break
 
     cv.destroyAllWindows()
