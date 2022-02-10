@@ -6,14 +6,14 @@ P = np.array([[-2.64369884e+00, -1.23577043e+00, -4.71130751e-01,  1.43258252e+0
  [-8.11727165e-05, -1.41629246e-03, -4.86481859e-04,  1.00000000e+00]])
 
 # Corners of goal region for camera 1
-corners_selected = [[1453, 608],[1700, 863],[163, 890],[393, 627]]
+corners_selected_1 = [[1453, 608],[1700, 863],[163, 890],[393, 627]]
 
-# Corners of goal region for camera 1
-corners_selected = [[1430, 598],[1657, 837],[210, 875],[420, 620]]
+# Corners of goal region for camera 2
+corners_selected_2 = [[1430, 598],[1657, 837],[210, 875],[420, 620]]
 
 # Media
 court_reference_frame_path = "../media/bocce_game_camera2_reference_frame.jpg"
-game_video_path = '../media/blue_ball_trimmed.mp4'
+game_video_path = '../../trimmed_trajs.mp4'
 
 # Calibration configs
 board_size = (9,7)

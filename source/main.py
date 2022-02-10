@@ -34,27 +34,31 @@ K, dist = getCameraIntrinsics(calibration_video,board_size,square_size)
 P = getCameraProjectionMatrix(K,dist,corners_actual,corners_selected)
 
 # Track balls in image
-ball_positions, ball_times, start_keypoint = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt)
+ball_positions, ball_times, tracked_frames = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt)
 
 # Clean workspace
 game_video.release()
 
 # Select keypoints from bouncing manually
-keypoints = select_bounces(court_reference_frame,start_keypoint, np.array(ball_positions[1][start_keypoint:-1]),win_width)
-
+all_keypoints = select_bounces(tracked_frames, ball_positions,win_width)
 # 3D Trajectory estimation
-traj_2d = []
-t = []
+traj_2d = [[] for i in range(9)]
+traj_3d = [[] for i in range(9)]
+t = [[] for i in range(9)]
 
-for i in range(1,len(keypoints)):
-    traj_2d.append(ball_positions[1][keypoints[i-1]:keypoints[i]+1])
-    t.append(ball_times[1][keypoints[i-1]:keypoints[i]+1])
-    t[i-1]=[t_k - t[i-1][0] for t_k in t[i-1]]
-
-traj_3d = np.array(generate_3d_trajectory(P, traj_2d[0], t[0])) # Should also return times
-for i in range(1,len(traj_2d)):
-    traj_3d = np.concatenate((traj_3d,generate_3d_trajectory(P, traj_2d[i], t[i])),axis=0)
+for ball in range(0,9):
+    keypoints = all_keypoints[ball]
+    for i in range(1,len(keypoints)):
+        traj_2d[ball].append(ball_positions[ball][keypoints[i-1]:keypoints[i]+1])
+        t[ball].append(ball_times[ball][keypoints[i-1]:keypoints[i]+1])
+        t[ball][i-1]=[t_k - t[ball][i-1][0] for t_k in t[ball][i-1]]
+    
+    if len(keypoints)>0:
+        traj_3d[ball] = np.array(generate_3d_trajectory(P, traj_2d[ball][0], t[ball][0])) # Should also return times
+        for i in range(1,len(traj_2d[ball])):
+            traj_3d[ball] = np.concatenate((traj_3d[ball],generate_3d_trajectory(P, traj_2d[ball][i], t[ball][i])),axis=0)
 
 # Plot results
 plot_trajectory(traj_3d,corners_actual,court_width,court_length)
+
 

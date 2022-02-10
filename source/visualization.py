@@ -43,7 +43,9 @@ def plot_trajectory(traj_3d,corners_actual,court_width,court_length):
     ax.plot_surface(X, Y, Z,alpha=0.3,color='r',edgecolors='r')
 
     # Add the trajectory
-    ax.plot(traj_3d[:,0],traj_3d[:,1],traj_3d[:,2],linestyle='--', marker='o', color='b', label='Ball trajectory 3d',zorder=100)
+    for traj in traj_3d:
+        if(len(traj)>0):
+            ax.plot(traj[:,0],traj[:,1],traj[:,2],linestyle='--', marker='o', color='b', label='Ball trajectory 3d',zorder=100)
     
     # Display the figure
     set_axes_equal(ax)
