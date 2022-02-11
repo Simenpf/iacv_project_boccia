@@ -31,7 +31,7 @@ def get_court_homography(frame, court_ratio, win_width, padding):
 
     # The corners selected by user and their actual positions
     corners_selected = []
-    corners_actual = np.array([[0, 0],[round(frame_width*(1-2*padding)), 0],[round(frame_width*(1-2*padding)), round(frame_width*(court_ratio-2*padding))],[0, round(frame_width*(court_ratio-2*padding))]])
+    corners_actual = np.array([[0, 0],[0, round(frame_width*(1-2*padding))],[round(frame_width*(court_ratio-2*padding)), round(frame_width*(1-2*padding))],[round(frame_width*(court_ratio-2*padding)), 0]])
     corners_actual += round(frame_width*padding)
     
     # Create a copy of the frame for user to click on
