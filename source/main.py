@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import imutils
 from configuration import *
 #from game_scores import calculate_score
 from visualization import plot_trajectory
@@ -7,6 +8,7 @@ from rectify_court import get_court_homography
 from ball_detection import get_image_trajectories, get_court_mask
 from reconstruction_3d import select_bounces, get_all_3d_segements
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
+from projective_funcs import transform_point
 
 # Window resolution
 win_width  = round(screen_width*0.6)
@@ -24,9 +26,8 @@ dt = 1/fps
 
 # Get court rectifying homography
 court_ratio = court_width/court_length
-H, _, corners_selected = get_court_homography(court_reference_frame, court_ratio, win_width, padding)
+H, corners_selected = get_court_homography(court_reference_frame, win_width)
 court_mask = get_court_mask(court_reference_frame,win_width)
-#_, court_mask, _ = get_court_homography(court_reference_frame, court_ratio, win_width, padding)
 
 # Camera Calibration
 calibration_video = cv.VideoCapture(calibration_video_path)

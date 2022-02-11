@@ -33,7 +33,6 @@ screen_height = 1080
 court_length = 202
 court_width = 390
 
-padding = 0 # The amount of image used from outside court (in fraction of court length)
 
 # Gravity constant (in cm/ms^2)
 g = -981
