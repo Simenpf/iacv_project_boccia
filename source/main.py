@@ -3,13 +3,14 @@ import numpy as np
 import math
 import imutils
 from configuration import *
+#from visualization import animate_score_board
 #from game_scores import calculate_score
 from visualization import plot_trajectory
 from rectify_court import get_court_homography
 from ball_detection import get_image_trajectories, get_court_mask
 from reconstruction_3d import select_bounces, get_all_3d_segements
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
-from projective_funcs import transform_point
+from projective_funcs import transform_point, create_rectified_position_vector
 
 def get_radius_range(ball_radius,P,court_back,court_front):
     p1_back = np.array([0, court_back, 0, 1])
@@ -75,8 +76,9 @@ traj_3d = get_all_3d_segements(ball_positions_im, ball_times, all_keypoints, P)
 
 
 # Plot results
-plot_trajectory(traj_3d,corners_actual,court_width,court_length)
+plot_trajectory(traj_3d,corners_actual)
 
 # Calculate scores
-#game_score = calculate_score(ball_positions, H)
+#ball_positions = create_rectified_position_vector(ball_positions_im)
+#animate_score_board(ball_positions)
 
