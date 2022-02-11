@@ -2,13 +2,14 @@ import cv2 as cv
 import numpy as np
 import imutils
 from configuration import *
+#from visualization import animate_score_board
 #from game_scores import calculate_score
 from visualization import plot_trajectory
 from rectify_court import get_court_homography
 from ball_detection import get_image_trajectories, get_court_mask
 from reconstruction_3d import select_bounces, get_all_3d_segements
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
-from projective_funcs import transform_point
+from projective_funcs import transform_point, create_rectified_position_vector
 
 # Window resolution
 win_width  = round(screen_width*0.6)
@@ -38,22 +39,23 @@ corners_actual = np.array([[0, 0, 0],[0, court_length, 0],[court_width, court_le
 P = P_auto
 
 # Track balls in video
-ball_positions, ball_times, tracked_frames = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt,court_mask)
+ball_positions_im, ball_times, tracked_frames = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt,court_mask)
 
 # Clean workspace
 game_video.release()
 
 # Manually select start and end points of parabolas
-all_keypoints = select_bounces(tracked_frames, ball_positions,win_width)
+all_keypoints = select_bounces(tracked_frames, ball_positions_im,win_width)
 
 
 # 3D Trajectory estimation
-traj_3d = get_all_3d_segements(ball_positions, ball_times, all_keypoints, P)
+traj_3d = get_all_3d_segements(ball_positions_im, ball_times, all_keypoints, P)
 
 
 # Plot results
 plot_trajectory(traj_3d,corners_actual)
 
 # Calculate scores
-#game_score = calculate_score(ball_positions, H)
+#ball_positions = create_rectified_position_vector(ball_positions_im)
+#animate_score_board(ball_positions)
 
