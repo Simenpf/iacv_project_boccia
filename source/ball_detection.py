@@ -186,7 +186,7 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
 
 # select the corners with double click
 def select_corner(event, x, y,flags, param):
-    if event == cv.EVENT_RBUTTONDBLCLK :
+    if event == cv.EVENT_LBUTTONDOWN :
         # Show the user that the click has been registered
         cv.circle(frame_copy, (x, y), 10, (0, 0, 255), 2)
         # Transform click position to corresponding place in full-sized image and add it
