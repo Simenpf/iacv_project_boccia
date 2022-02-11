@@ -121,7 +121,7 @@ def estimate_ball_positions(pos,new_pos):
             new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
     return new_pos
 
-def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt):
+def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt, court_mask):
     # Perform game tracking
     pos_out_of_court = [-1,-1]
     ball_positions   = [[pos_out_of_court] for i in range(9)]
@@ -139,10 +139,10 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
 
         # While there are frames in video-feed, run game-tracking
         if success:
-            frame_copy = frame.copy()
 
             # Mask out court (+ padding), so detection is only done on court
-            #frame = cv.bitwise_and(frame, frame ,mask = court_mask)
+            frame = cv.bitwise_and(frame, frame ,mask = court_mask)
+            frame_copy = frame.copy()
 
             # Track balls
             masks, new_ball_positions = detect_balls(frame, detection_scaling)
@@ -183,3 +183,39 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
         t+=dt
     cv.destroyAllWindows()
     return ball_positions, ball_times, tracked_frames
+
+# select the corners with double click
+def select_corner(event, x, y,flags, param):
+    if event == cv.EVENT_LBUTTONDOWN :
+        # Show the user that the click has been registered
+        cv.circle(frame_copy, (x, y), 10, (0, 0, 255), 2)
+        # Transform click position to corresponding place in full-sized image and add it
+        click = transform_point([x, y, 1], H_resize_inv)
+        x = round(click[0])
+        y = round(click[1])
+        corners_selected.append([x, y])
+
+def get_court_mask(frame,win_width):
+    global corners_selected
+    global frame_copy
+    global H_resize_inv
+    corners_selected = []
+    frame_width = frame.shape[1]
+    frame_height = frame.shape[0]
+    frame_copy = imutils.resize(frame, width=win_width)
+    resize_ratio = win_width / frame_width
+    H_resize_inv = np.array([[1 / resize_ratio, 0, 0], [0, 1 / resize_ratio, 0], [0, 0, 1]])
+    title = "Select corners of the court, then press enter..."
+    cv.imshow(title, frame_copy)
+    cv.setMouseCallback(title, select_corner)
+
+    while True:
+        cv.imshow(title, frame_copy)
+        if cv.waitKey(20) == 13:
+            cv.destroyAllWindows()
+            break
+
+    corners = np.array(corners_selected, np.int32)
+    mask = np.zeros((frame_height,frame_width), np.uint8)
+    cv.fillPoly(mask,[corners],(255,255,255))
+    return mask
