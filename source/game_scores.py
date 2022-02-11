@@ -3,26 +3,11 @@ import cv2 as cv
 import numpy as np
 from cmath import inf
 from math import sqrt
-from projective_funcs import transform_point
+from projective_funcs import transform_point, create_rectified_position_vector
 from configuration import court_reference_frame_path, H_auto, team_1_ball_indexes, team_2_ball_indexes, court_length, court_width, ball_score, number_of_balls
 
-## MODULE INPUTS: 2D image positions, rectification matrix
+## MODULE INPUTS: 2D ball position vector
 ## MODULE OUTPUTS: 1x2 Score vector [Score team 1, Score team 2]
-
-# Get rectified 2d positions from 2d image positions
-def create_rectified_position_vector(image_points, H):
-    H = np.linalg.inv(H)
-    w = 1
-    rect_positions = [[] for i in range(0,number_of_balls)] 
-
-    for ball in range(0, number_of_balls):
-        for i in range(0, len(image_points[ball])):
-            image_points[ball][i].append(w)
-            #print(image_points[ball][i])
-            rect_pos = transform_point(image_points[ball][i], H)
-            print(rect_pos)
-            rect_positions[ball].append([rect_pos[0], rect_pos[1]])
-    return np.array(rect_positions)
 
 #corners = [1430, 598],[1657, 837],[210, 875],[420, 620]
 court_reference_frame = cv.imread(court_reference_frame_path)
@@ -30,15 +15,25 @@ image_points = [[[1430,598], [300,40]],[[1657,837],[30,30]],[[210,875],[30,30]],
                 [[1,1],[30,80]],[[1,200],[30,30]],[[400,400],[100,360],[900,200], [80,240]],[[0,0]]]
 
 # Testing point transformation
-H = np.linalg.inv(H_auto)
-point_zero = transform_point([0,202,1],H)
+H_inv = np.linalg.inv(H_auto)
+point_zero = transform_point([0,202,1],H_inv)
 point_zero = np.array((round(point_zero[0]), round(point_zero[1])))
 test_img = court_reference_frame.copy()
 cv.circle(test_img,point_zero,10,(0,0,255),-1)
 test_img = imutils.resize(test_img, width=800)
 cv.imshow('',test_img)
 cv.waitKey(0)
-print(create_rectified_position_vector(image_points, H))
+
+ball_pos = create_rectified_position_vector(image_points, H_auto)
+
+test_img2 = court_reference_frame.copy()
+for ball in range(0, number_of_balls):
+    for i in range(0, len(ball_pos[ball])):
+        cv.circle(test_img2,ball_pos[ball][i],10,(0,0,255),-1)
+test_img2 = imutils.resize(test_img2, width=800)
+cv.imshow('', test_img2)
+cv.waitKey(0)
+
 
 # Check if a position is outside defined court
 def pos_out_of_bounds(pos):
@@ -64,10 +59,10 @@ def find_closest_ball(ball_distances):
     return closest_ball, closest_ball_distance
 
 # Calculate score from the ball positions
-def calculate_score(image_pos, H):
+ball_positions = create_rectified_position_vector(image_points, H_auto)
+
+def calculate_score(ball_positions):
     score = [0, 0]
-    
-    ball_positions = create_rectified_position_vector(image_pos, H)
     center_ball_position = ball_positions[-1]
 
     while not pos_out_of_bounds(center_ball_position):

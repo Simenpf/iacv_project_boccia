@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 from configuration import court_length, court_width, number_of_balls, ball_colors
 
+# 3D plotting
 def set_axes_equal(ax):
     x_limits = ax.get_xlim3d()
     y_limits = ax.get_ylim3d()
@@ -57,7 +58,8 @@ def plot_trajectory(traj_3d,corners_actual):
     plt.legend()
     plt.show()
 
-def get_current_score_board(current_ball_positions):
+# 2D plotting
+def display_current_score_board(current_ball_positions):
     # Create plot
     plt.ylim(0,court_width)
     plt.xlim(0,court_length)
@@ -66,44 +68,47 @@ def get_current_score_board(current_ball_positions):
 
     # Plot balls
     for ball in range(0, number_of_balls):
-        current_score_board.plot(current_ball_positions[ball], '%s' %ball_colors[ball], label='Ball %i' %ball)
+        if not pos_out_of_bounds(current_ball_positions[ball]):
+            current_score_board.plot(current_ball_positions[ball], '%s' %ball_colors[ball], label='Ball %i' %ball)
+    
     current_score_board.legend()
+    ball_distances = get_distances_from_center_ball(current_ball_positions)
+    closest_ball, closest_ball_distance = find_closest_ball(ball_distances)
     
     # Calculate and display score   
-    score = calculate_score(image_points, H)
+    score = calculate_score(ball_positions)
     at = AnchoredText("Team 1: %i \n Team 2: %i)" %score[0] %score[1], prop=dict(size=15), frameon=True, loc='upper left')
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-    
-    return current_score_board
-
-
-# 2d scoring plot
-def create_score_board_frame(image_points, H):
-    score_board_frame = []
-
-    #Define plot params (maybe move to animate plot function)
-    plt.ylim(0,court_width)
-    plt.xlim(0,court_length)
-    plt.title('Score Board')
-
-    ball_pos_2d = create_rectified_position_vector(image_points, H)
-
-    for ball in range(0, number_of_balls):
-        x = ball_pos_2d[ball][0]
-        y = ball_pos_2d[ball][1]
-        score_board_frame = plt.plot(x,y)
-
-    # Calculate and display score   
-    score = calculate_score(image_points, H)
-    at = AnchoredText("Team 1: %i \n Team 2: %i)" %score[0] %score[1], prop=dict(size=15), frameon=True, loc='upper left')
-    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-    
-    return score_board_frame
-
-def animate_score_board(image_points, H):
-    
-    for i in range(0, number_of_balls):
-        return
-    score_board_frame = create_score_board_frame(image_points, H)
-
+    current_score_board.plot([current_ball_positions[-1], current_ball_positions[closest_ball]], '-k')
     return
+
+def animate_score_board(ball_positions):
+    for i in range(0, len(ball_positions[0])): # maybe use something else on upper range
+        display_current_score_board(ball_positions[i]) 
+        cv.wait(2)
+    return
+
+# OUTDATED
+## 2d scoring plot
+#def create_score_board_frame(image_points, H):
+#    score_board_frame = []
+#
+#    #Define plot params (maybe move to animate plot function)
+#    plt.ylim(0,court_width)
+#    plt.xlim(0,court_length)
+#    plt.title('Score Board')
+#
+#    ball_pos_2d = create_rectified_position_vector(image_points, H)
+#
+#    for ball in range(0, number_of_balls):
+#        x = ball_pos_2d[ball][0]
+#        y = ball_pos_2d[ball][1]
+#        score_board_frame = plt.plot(x,y)
+#
+#    # Calculate and display score   
+#    score = calculate_score(image_points, H)
+#    at = AnchoredText("Team 1: %i \n Team 2: %i)" %score[0] %score[1], prop=dict(size=15), frameon=True, loc='upper left')
+#    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+#    
+#    return score_board_frame
+#

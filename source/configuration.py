@@ -12,13 +12,9 @@ P_auto = np.array([[-2.64369884e+00, -1.23577043e+00, -4.71130751e-01,  1.432582
                    [-4.78026920e-03, -1.95656940e-02, -2.74553103e+00,  5.99706109e+02],
                    [-8.11727165e-05, -1.41629246e-03, -4.86481859e-04,  1.00000000e+00]])
 
-H_auto_old = np.array([[-2.82651316e+00, -1.29762650e+02,  8.16399783e+04],
-                   [ 4.23040479e+01, -4.01799953e+01, -3.64671513e+04],
-                   [-2.33789673e-04, -2.04295499e-02,  1.00000000e+00]])
-
-H_auto = np.array([[ 4.23040479e+01, -4.01799953e+01, -3.64671513e+04],
-                [-2.82651316e+00, -1.29762650e+02,  8.16399783e+04],
-                [-2.33789673e-04, -2.04295499e-02,  1.00000000e+00]])
+H_auto = np.array([[ 3.13151514e+00, -2.88565238e+00, -2.76736652e+03],
+                    [-2.63396092e-01, -9.87247575e+00,  6.25130627e+03],
+                    [-5.22144799e-04, -1.46404428e-02,  1.00000000e+00]])
 
 # Calibration configs
 board_size = (9,7)
@@ -47,7 +43,7 @@ ball_colors  = ['darkturquoise','darkturquoise','orange','orange','limegreen','l
 
 team_1_ball_indexes = [0,1,2,3]
 team_2_ball_indexes = [4,5,6,7]
-ball_score = 999999999 # points given for each ball closer than opposite team
+ball_score = 9001 # points given for each ball closer than opposite team
 
 # Hue of the balls (Found experimentally)
 blue_hue   = 95
