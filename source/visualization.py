@@ -83,8 +83,9 @@ def display_current_score_board(current_ball_positions):
     return
 
 def animate_score_board(ball_positions):
+    current_ball_positions = get_current_ball_positions(ball_positions)
     for i in range(0, len(ball_positions[0])): # maybe use something else on upper range
-        display_current_score_board(ball_positions[i]) 
+        display_current_score_board(current_ball_positions) 
         cv.wait(2)
     return
 

@@ -44,8 +44,10 @@ ball_radius = 5
 number_of_balls = 9
 ball_colors  = ['darkturquoise','darkturquoise','orange','orange','limegreen','limegreen','red','red','yellow']
 
-team_1_ball_indexes = [0,1,2,3]
-team_2_ball_indexes = [4,5,6,7]
+team_1_ball_indexes = range(0,4)
+team_1_ball_slice = slice(0,4)
+team_2_ball_indexes = range(4,8)
+team_2_ball_slice = slice(4,8)
 ball_score = 9001 # points given for each ball closer than opposite team
 
 # Hue of the balls (Found experimentally)
