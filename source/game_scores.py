@@ -1,31 +1,44 @@
+import imutils
+import cv2 as cv
 import numpy as np
-from cv2 import sqrt
 from cmath import inf
+from math import sqrt
 from projective_funcs import transform_point
-from configuration import H_auto, team_1_ball_indexes, team_2_ball_indexes, court_length, court_width, ball_score, number_of_balls
+from configuration import court_reference_frame_path, H_auto, team_1_ball_indexes, team_2_ball_indexes, court_length, court_width, ball_score, number_of_balls
 
 ## MODULE INPUTS: 2D image positions, rectification matrix
 ## MODULE OUTPUTS: 1x2 Score vector [Score team 1, Score team 2]
 
 # Get rectified 2d positions from 2d image positions
 def create_rectified_position_vector(image_points, H):
-    #image_points = np.array(image_points) 
+    H = np.linalg.inv(H)
     w = 1
     rect_positions_i = [[0] for i in range(0,number_of_balls)] # INITIALIZING ISSUE
-    rect_positions = [[0] for i in range(0,number_of_balls)] # INITIALIZING ISSUE
+    rect_positions = [[] for i in range(0,number_of_balls)] 
 
     for ball in range(0, number_of_balls):
         for i in range(0, len(image_points[ball])):
-            image_points[ball][i].append(w) #9xnx2 -> 9xnx3
+            image_points[ball][i].append(w)
+            #print(image_points[ball][i])
             rect_pos = transform_point(image_points[ball][i], H) #BITCH INDEX OUT OF RANGE BUT WHYYYY
-            rect_positions_i[ball] = [] #FIXXX
+            print(rect_pos)
             rect_positions[ball].append([rect_pos[0], rect_pos[1]])
-        
     return np.array(rect_positions)
 
+#corners = [1430, 598],[1657, 837],[210, 875],[420, 620]
+court_reference_frame = cv.imread(court_reference_frame_path)
+image_points = [[[1430,598], [300,40]],[[1657,837],[30,30]],[[210,875],[30,30]],[[420,620],[80,80],[450,60],[300,30]],[[1,190],[380,300]],
+                [[1,1],[30,80]],[[1,200],[30,30]],[[400,400],[100,360],[900,200], [80,240]],[[0,0]]]
 
-image_points = [[[1,1],[5,5]],[10,10],[[160,100],[30,30]],[[600,1],[300,30]],[[1,190],[380,300]],[[1,1],[30,80]],[[1,200],[30,30]],[[400,400]],[[100,360],[900,200], [80,240]]]
-H = H_auto
+# Testing point transformation
+H = np.linalg.inv(H_auto)
+point_zero = transform_point([0,202,1],H)
+point_zero = np.array((round(point_zero[0]), round(point_zero[1])))
+test_img = court_reference_frame.copy()
+cv.circle(test_img,point_zero,10,(0,0,255),-1)
+test_img = imutils.resize(test_img, width=800)
+cv.imshow('',test_img)
+cv.waitKey(0)
 print(create_rectified_position_vector(image_points, H))
 
 # Check if a position is outside defined court
