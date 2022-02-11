@@ -121,7 +121,7 @@ def estimate_ball_positions(pos,new_pos):
             new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
     return new_pos
 
-def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt):
+def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt, court_mask):
     # Perform game tracking
     pos_out_of_court = [-1,-1]
     ball_positions   = [[pos_out_of_court] for i in range(9)]
@@ -139,10 +139,10 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
 
         # While there are frames in video-feed, run game-tracking
         if success:
-            frame_copy = frame.copy()
 
             # Mask out court (+ padding), so detection is only done on court
-            #frame = cv.bitwise_and(frame, frame ,mask = court_mask)
+            frame = cv.bitwise_and(frame, frame ,mask = court_mask)
+            frame_copy = frame.copy()
 
             # Track balls
             masks, new_ball_positions = detect_balls(frame, detection_scaling)
@@ -195,12 +195,13 @@ def select_corner(event, x, y,flags, param):
         y = round(click[1])
         corners_selected.append([x, y])
 
-def court_mask(frame,win_width):
+def get_court_mask(frame,win_width):
     global corners_selected
     global frame_copy
     global H_resize_inv
     corners_selected = []
     frame_width = frame.shape[1]
+    frame_height = frame.shape[0]
     frame_copy = imutils.resize(frame, width=win_width)
     resize_ratio = win_width / frame_width
     H_resize_inv = np.array([[1 / resize_ratio, 0, 0], [0, 1 / resize_ratio, 0], [0, 0, 1]])
@@ -215,5 +216,6 @@ def court_mask(frame,win_width):
             break
 
     corners = np.array(corners_selected, np.int32)
-    court_mask = cv.fillPoly(frame,[corners],255)
-    return court_mask,frame
+    mask = np.zeros((frame_height,frame_width), np.uint8)
+    cv.fillPoly(mask,[corners],(255,255,255))
+    return mask

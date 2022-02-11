@@ -1,10 +1,10 @@
 import cv2 as cv
 import numpy as np
 from configuration import *
-from game_scores import calculate_score
+#from game_scores import calculate_score
 from visualization import plot_trajectory
 from rectify_court import get_court_homography
-from ball_detection import get_image_trajectories
+from ball_detection import get_image_trajectories, get_court_mask
 from reconstruction_3d import select_bounces, get_all_3d_segements
 from camera_calibration import getCameraIntrinsics, getCameraProjectionMatrix
 
@@ -24,7 +24,8 @@ dt = 1/fps
 
 # Get court rectifying homography
 court_ratio = court_width/court_length
-H, court_mask, corners_selected = get_court_homography(court_reference_frame, court_ratio, win_width, padding)
+H, _, corners_selected = get_court_homography(court_reference_frame, court_ratio, win_width, padding)
+court_mask = get_court_mask(court_reference_frame,win_width)
 #_, court_mask, _ = get_court_homography(court_reference_frame, court_ratio, win_width, padding)
 
 # Camera Calibration
@@ -36,7 +37,7 @@ corners_actual = np.array([[0, 0, 0],[0, court_length, 0],[court_width, court_le
 P = P_auto
 
 # Track balls in video
-ball_positions, ball_times, tracked_frames = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt)
+ball_positions, ball_times, tracked_frames = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt,court_mask)
 
 # Clean workspace
 game_video.release()
