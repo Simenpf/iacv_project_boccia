@@ -7,7 +7,7 @@ from projective_funcs import transform_point
 
 # Callback function for mouseclick. Adds corner to list and marks it in frame
 def select_corner(event,x,y,flags,param):
-    if event == cv.EVENT_LBUTTONDBLCLK:
+    if event == cv.EVENT_LBUTTONDOWN:
         # Show the user that the click has been registered
         cv.circle(frame_copy,(x,y),10,(0,0,255),2)
 
