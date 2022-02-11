@@ -13,14 +13,13 @@ from configuration import court_reference_frame_path, H_auto, team_1_ball_indexe
 def create_rectified_position_vector(image_points, H):
     H = np.linalg.inv(H)
     w = 1
-    rect_positions_i = [[0] for i in range(0,number_of_balls)] # INITIALIZING ISSUE
     rect_positions = [[] for i in range(0,number_of_balls)] 
 
     for ball in range(0, number_of_balls):
         for i in range(0, len(image_points[ball])):
             image_points[ball][i].append(w)
             #print(image_points[ball][i])
-            rect_pos = transform_point(image_points[ball][i], H) #BITCH INDEX OUT OF RANGE BUT WHYYYY
+            rect_pos = transform_point(image_points[ball][i], H)
             print(rect_pos)
             rect_positions[ball].append([rect_pos[0], rect_pos[1]])
     return np.array(rect_positions)
@@ -112,8 +111,6 @@ def find_closest_ball(ball_positions):
                 closest_ball = ball
                 closest_ball_dist = dist_from_center_ball
     return closest_ball, closest_ball_dist
-
-
 
 #game_score = calculate_score(ball_positions, H)
 

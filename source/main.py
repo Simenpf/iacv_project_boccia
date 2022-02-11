@@ -51,7 +51,7 @@ traj_3d = get_all_3d_segements(ball_positions, ball_times, all_keypoints, P)
 
 
 # Plot results
-plot_trajectory(traj_3d,corners_actual,court_width,court_length)
+plot_trajectory(traj_3d,corners_actual)
 
 # Calculate scores
 #game_score = calculate_score(ball_positions, H)

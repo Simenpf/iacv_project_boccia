@@ -44,10 +44,11 @@ g = -981
 
 # Game play 
 number_of_balls = 9
+ball_colors  = ['darkturquoise','darkturquoise','orange','orange','limegreen','limegreen','red','red','yellow']
 
 team_1_ball_indexes = [0,1,2,3]
 team_2_ball_indexes = [4,5,6,7]
-ball_score = 10 # points given for each ball closer than opposite team
+ball_score = 999999999 # points given for each ball closer than opposite team
 
 # Hue of the balls (Found experimentally)
 blue_hue   = 95
