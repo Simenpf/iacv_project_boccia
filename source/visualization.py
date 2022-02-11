@@ -76,7 +76,7 @@ def display_current_score_board(current_ball_positions):
     closest_ball, closest_ball_distance = find_closest_ball(ball_distances)
     
     # Calculate and display score   
-    score = calculate_score(ball_positions)
+    score = calculate_score(current_ball_positions)
     at = AnchoredText("Team 1: %i \n Team 2: %i)" %score[0] %score[1], prop=dict(size=15), frameon=True, loc='upper left')
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     current_score_board.plot([current_ball_positions[-1], current_ball_positions[closest_ball]], '-k')
@@ -88,6 +88,7 @@ def animate_score_board(ball_positions):
         display_current_score_board(current_ball_positions) 
         cv.wait(2)
     return
+
 
 # OUTDATED
 ## 2d scoring plot
