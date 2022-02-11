@@ -3,8 +3,8 @@ import numpy as np
 # Media
 court_reference_frame_path = "../media/bocce_game_camera2_reference_frame.jpg"
 calibration_video_path     = '../media/calibration_video_camera2.mp4'
-#game_video_path            = '../../trimmed_trajs.mp4'
-game_video_path = '../media/blue_ball_trimmed.mp4'
+game_video_path            = '../../trimmed_trajs.mp4'
+#game_video_path = '../media/blue_ball_trimmed.mp4'
 
 # Pre-calculated values
 corners_auto = [[1430, 598],[1657, 837],[210, 875],[420, 620]]
@@ -41,6 +41,9 @@ court_width = 390
 # Gravity constant (in cm/ms^2)
 g = -981
 
+# Ball radius
+ball_radius = 5
+
 # Game play 
 number_of_balls = 9
 
@@ -53,7 +56,7 @@ blue_hue   = 95
 orange_hue = 17
 green_hue  = 47
 red_hue    = 176 
-yellow_hue = 30
+yellow_hue = 27
 
 # Colors of the balls in (B,G,R)
 ball_colors_bgr = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
