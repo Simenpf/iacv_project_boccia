@@ -29,8 +29,10 @@ def create_rectified_position_vector(image_points, H):
 court_reference_frame = cv.imread(court_reference_frame_path)
 image_points = [[[1430,598], [300,40]],[[1657,837],[30,30]],[[210,875],[30,30]],[[420,620],[80,80],[450,60],[300,30]],[[1,190],[380,300]],
                 [[1,1],[30,80]],[[1,200],[30,30]],[[400,400],[100,360],[900,200], [80,240]],[[0,0]]]
+
+# Testing point transformation
 H = np.linalg.inv(H_auto)
-point_zero = transform_point([0,0,1],H)
+point_zero = transform_point([0,202,1],H)
 point_zero = np.array((round(point_zero[0]), round(point_zero[1])))
 test_img = court_reference_frame.copy()
 cv.circle(test_img,point_zero,10,(0,0,255),-1)
