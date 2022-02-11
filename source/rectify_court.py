@@ -1,7 +1,7 @@
 import imutils
 import cv2 as cv
 import numpy as np
-from configuration import escape_key, delay_time, corners_auto
+from configuration import escape_key, delay_time, corners_auto, court_length, court_width
 from projective_funcs import transform_point
 
 
@@ -19,7 +19,7 @@ def select_corner(event,x,y,flags,param):
         
 
 # Function for retrieving metric-rectification matrix, based on input frame and user clicks
-def get_court_homography(frame, court_ratio, win_width, padding):
+def get_court_homography(frame, win_width):
     # Variables that must be reached by callback function
     global frame_copy
     global corners_selected
@@ -27,12 +27,11 @@ def get_court_homography(frame, court_ratio, win_width, padding):
 
     
     frame_width  = frame.shape[1]
-    frame_height = frame.shape[0]
 
     # The corners selected by user and their actual positions
     corners_selected = []
-    corners_actual = np.array([[0, 0],[0, round(frame_width*(1-2*padding))],[round(frame_width*(court_ratio-2*padding)), round(frame_width*(1-2*padding))],[round(frame_width*(court_ratio-2*padding)), 0]])
-    corners_actual += round(frame_width*padding)
+    corners_actual = np.array([[0, 0],[0, court_length],[court_width, court_length],[court_width, 0]])
+
     
     # Create a copy of the frame for user to click on
     frame_copy = imutils.resize(frame, width=win_width)
@@ -54,16 +53,13 @@ def get_court_homography(frame, court_ratio, win_width, padding):
             break
 
     # Compute homography based on user-selected corners, and their actual positions 
-    corners_selected = corners_auto
-    corners_actual  = np.float32(corners_actual)
+    #corners_selected = corners_auto
+    corners_actual   = np.float32(corners_actual)
     corners_selected = np.float32([corners_selected])
     H = cv.getPerspectiveTransform(corners_selected,corners_actual)
 
-    # Create a mask of the court and padding
-    court_mask = np.ones((round(frame_width*court_ratio),frame_width), dtype="uint8")
-    court_mask = cv.warpPerspective(court_mask, np.linalg.inv(H), (frame_width,frame_height))
     
-    return H, court_mask, corners_selected
+    return H, corners_selected
 
 
 
