@@ -75,10 +75,10 @@ def calculate_score(current_ball_positions):
 
 #ball_positions = create_rectified_position_vector(image_points, H_auto)
 
-ball_positions_1 = [[[0,0],[200,200]], [[200,390],[100,100]], [[20,70],[50,100]], [[0,0],[200,200]], [[0,3],[5,15]], [[3,0],[15,150]], [[-1,-1],[-1,-1]],[[-1,-1],[5,15]] ,[[100,190],[100,190]]]
-ball_positions_2 = [[[0,190],[200,200]], [[200,390],[100,100]], [[100,80],[50,100]], [[0,0],[200,200]], [[0,3],[5,15]], [[3,0],[15,150]], [[100,190],[-1,-1]],[[-1,-1],[5,15]] ,[[100,190],[100,190]]]
-current_ball_positions = get_current_ball_positions(ball_positions_2,0)
-print(calculate_score(current_ball_positions))
+#ball_positions_1 = [[[0,0],[200,200]], [[200,390],[100,100]], [[20,70],[50,100]], [[0,0],[200,200]], [[0,3],[5,15]], [[3,0],[15,150]], [[-1,-1],[-1,-1]],[[-1,-1],[5,15]] ,[[100,190],[100,190]]]
+#ball_positions_2 = [[[0,190],[200,200]], [[200,390],[100,100]], [[100,80],[50,100]], [[0,0],[200,200]], [[0,3],[5,15]], [[3,0],[15,150]], [[100,190],[-1,-1]],[[-1,-1],[5,15]] ,[[100,190],[100,190]]]
+#current_ball_positions = get_current_ball_positions(ball_positions_2,0)
+#print(calculate_score(current_ball_positions))
 
 # Testing point transformation
 #H_inv = np.linalg.inv(H_auto)

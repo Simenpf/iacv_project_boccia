@@ -3,8 +3,8 @@ import numpy as np
 # Media
 court_reference_frame_path = "../media/bocce_game_camera2_reference_frame.jpg"
 calibration_video_path     = '../media/calibration_video_camera2.mp4'
-game_video_path            = '../../trimmed_trajs.mp4'
-#game_video_path = '../media/blue_ball_trimmed.mp4'
+#game_video_path            = '../../trimmed_trajs.mp4'
+game_video_path = '../media/blue_ball_trimmed.mp4'
 
 # Pre-calculated values
 corners_auto = [[1430, 598],[1657, 837],[210, 875],[420, 620]]
@@ -37,7 +37,7 @@ court_width = 390
 # Gravity constant (in cm/ms^2)
 g = -981
 
-# Ball radius
+# Ball radius (cm)
 ball_radius = 5
 
 # Game play 
