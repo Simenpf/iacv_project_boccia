@@ -53,7 +53,7 @@ def calculate_score(current_ball_positions):
             ball_distances_team_1.sort()
             _, closest_ball_opposite_team_distance = find_closest_ball(ball_distances[team_2_ball_slice])
             for ball in range(0, int((number_of_balls-1)/2)):
-                if closest_ball_opposite_team_distance<ball_distances_team_1[ball]:
+                if closest_ball_opposite_team_distance>ball_distances_team_1[ball]:
                     score_count+=1
             score[0] = score_count*ball_score
         # Team 2 has the closest ball
@@ -63,7 +63,7 @@ def calculate_score(current_ball_positions):
                 ball_distances_team_2.sort()
                 _, closest_ball_opposite_team_distance = find_closest_ball(ball_distances[team_1_ball_slice])
             for ball in range(0, int((number_of_balls-1)/2)):
-                if closest_ball_opposite_team_distance<ball_distances_team_2[ball]:
+                if closest_ball_opposite_team_distance>ball_distances_team_2[ball]:
                     score_count+=1
             score[1] = score_count*ball_score
         else:
