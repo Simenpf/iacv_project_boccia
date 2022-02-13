@@ -59,7 +59,7 @@ def get_court_homography(frame, win_width):
     H = cv.getPerspectiveTransform(corners_selected,corners_actual)
 
     
-    return H, corners_selected
+    return H, corners_selected[0]
 
 
 

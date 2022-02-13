@@ -6,16 +6,10 @@ from configuration import *
 from projective_funcs import transform_point
 
 
-def dilate_mask(mask):
-    kernel = np.ones((5,5), np.uint8)
-    return cv.dilate(mask, kernel, iterations=4)
-
+# Returns masks for each ball color from the given image
 def mask_balls(frame):
     # Convert frame from BGR format to HSV format
     hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-
-    # Range of included hues in both directions
-    hue_range = 4
 
     # Blue ball HSV range
     low_blue  = np.array([blue_hue-hue_range,100,100])
@@ -34,8 +28,8 @@ def mask_balls(frame):
     high_red = np.array([red_hue+hue_range,255,255])
 
     # Yellow ball HSV range
-    low_yellow  = np.array([yellow_hue-hue_range,100,100])
-    high_yellow = np.array([yellow_hue+hue_range,255,255])
+    low_yellow  = np.array([yellow_hue-hue_range*2,50,100])
+    high_yellow = np.array([yellow_hue+hue_range*2,255,255])
 
     # Create color masks
     mask_blue   = cv.inRange(hsv_frame, low_blue,   high_blue)
@@ -44,15 +38,12 @@ def mask_balls(frame):
     mask_red    = cv.inRange(hsv_frame, low_red,    high_red)
     mask_yellow = cv.inRange(hsv_frame, low_yellow, high_yellow)
 
-    # Dilate color masks
-    #mask_blue   = dilate_mask(mask_blue)
-    #mask_orange = dilate_mask(mask_orange)
-    #mask_green  = dilate_mask(mask_green)
-    #mask_red    = dilate_mask(mask_red)
-    #mask_yellow = dilate_mask(mask_yellow)
-
     return [mask_blue, mask_orange, mask_green, mask_red, mask_yellow]
 
+
+# Returns a value from 0 to 1 indicating the circularity of the given contour
+# The calculation is based on the known realtion between perimeter and area of
+# a circle
 def circularity(con):
     perimeter = cv.arcLength(con, True)
     area = cv.contourArea(con)
@@ -68,7 +59,6 @@ def detect_balls(frame, detection_scaling, r_min, r_max):
 
     # Prepare frame for detection
     frame_width = frame.shape[1]
-    #frame = cv.blur(frame, (3,3))
     frame = imutils.resize(frame, width=round(frame_width*detection_scaling))
   
     # Homography between true frame and downscaled frame
@@ -82,7 +72,7 @@ def detect_balls(frame, detection_scaling, r_min, r_max):
     all_masks = cv.bitwise_or(all_masks,frame_masks[4])
 
 
-
+    # Initialize ball positions
     balls_pos = [[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1]]
 
     # For each color...
@@ -90,8 +80,6 @@ def detect_balls(frame, detection_scaling, r_min, r_max):
         # Find contours in all the ball masks
         contours = cv.findContours(frame_masks[i], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[-2]
 
-        # Sort the contours from large to small areas
-        #contours = sorted(contours, key=cv.contourArea, reverse=True)
 
         # If color is not yellow
         if i != 4:
@@ -105,13 +93,18 @@ def detect_balls(frame, detection_scaling, r_min, r_max):
 
             # Sort contours on circularity
             contours = sorted(contours_in_range, key=circularity, reverse=True)
+
             # For one or two balls
             for j in range(0, min(2,len(contours))):
-                    if circularity(contours[j]) > 0.5:
+
+                    # Discard if circularity is below threshold
+                    if circularity(contours[j]) > circularity_threshold:
                         (x,y), r = cv.minEnclosingCircle(contours[j])
                         pos = np.array([x,y,1])
                         pos = transform_point(pos,H_detection_scaling)
                         balls_pos[i*2+j]= [round(pos[0]),round(pos[1])]
+
+        # If color is yellow
         else:
             # Remove from list if not in radius range
             contours_in_range = []
@@ -124,11 +117,11 @@ def detect_balls(frame, detection_scaling, r_min, r_max):
             # Sort contours on circularity
             contours = sorted(contours_in_range, key=circularity, reverse=True)
             if len(contours)>0:
-                if circularity(contours[0]) > 0.7:
+                if circularity(contours[0]) > circularity_threshold:
                     (x,y), r = cv.minEnclosingCircle(contours[0])
                     pos = np.array([x,y,1])
                     pos = transform_point(pos,H_detection_scaling)
-                    balls_pos[8] = [round(pos[0]),round(pos[1])]
+                    balls_pos[-1] = [round(pos[0]),round(pos[1])]
 
 
     # Prepare masks for visualization
@@ -150,8 +143,9 @@ def estimate_ball_positions(pos,new_pos):
             new_pos[i], new_pos[i+1] = new_pos[i+1], new_pos[i]
     return new_pos
 
+# Performs the complete ball detection, returning trajectories for all balls in image space
 def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt, court_mask, r_min, r_max):
-    # Perform game tracking
+    # Initialization
     pos_out_of_court = [-1,-1]
     ball_positions_detected = [[pos_out_of_court] for i in range(9)]
     ball_positions   = [[pos_out_of_court] for i in range(9)]
@@ -170,7 +164,7 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
         # While there are frames in video-feed, run game-tracking
         if success:
 
-            # Mask out court (+ padding), so detection is only done on court
+            # Mask out the court, so detection is not performed on unwanted objects
             frame = cv.bitwise_and(frame, frame ,mask = court_mask)
             frame_copy = frame.copy()
 
@@ -182,14 +176,17 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
 
             # Select order of same colored balls
             new_ball_positions = estimate_ball_positions(current_ball_positions,new_ball_positions)
+
             # Add trajectory information to outputs
             for i in range(0, len(new_ball_positions)):
-                ball_positions[i].append(new_ball_positions[i])
                 if new_ball_positions[i] != pos_out_of_court:
+                    ball_positions[i].append(new_ball_positions[i])
                     ball_positions_detected[i].append(new_ball_positions[i])
                     tracked_frames[i].append(frame)
                     ball_times[i].append(t)
                     frame_index[i] += 1
+                else:
+                    ball_positions[i].append(ball_positions[i][-1])
                 if len(ball_positions_detected[i])>1:
                     # Draw a trail behind the ball
 
@@ -201,10 +198,10 @@ def get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, d
 
             # Display results
             #overview = np.concatenate((rectified_frame, rectified_masks), axis=1)
-            overview = np.concatenate((frame_copy, masks), axis=1)
+            overview = np.concatenate((rectified_frame, rectified_masks), axis=1)
             overview = imutils.resize(overview, width=win_width)
             frame_small = imutils.resize(frame_copy, width=win_width)
-            cv.imshow("press 'C' to capture the balls(press enter to exit...)", frame_small)
+            cv.imshow("Performing tracking (press enter to exit...)", frame_small)
 
             # Quit if user presses enter
             if cv.waitKey(delay_time) == escape_key:
@@ -236,7 +233,7 @@ def get_court_mask(frame,win_width):
     frame_copy = imutils.resize(frame, width=win_width)
     resize_ratio = win_width / frame_width
     H_resize_inv = np.array([[1 / resize_ratio, 0, 0], [0, 1 / resize_ratio, 0], [0, 0, 1]])
-    title = "Select corners of the court, then press enter..."
+    title = "Select a suitable points for a cort mask, then press enter..."
     cv.imshow(title, frame_copy)
     cv.setMouseCallback(title, select_corner)
 
