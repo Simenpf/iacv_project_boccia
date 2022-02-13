@@ -2,7 +2,7 @@ import numpy as np
 from game_scores import *
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
-from configuration import court_length, court_width, number_of_balls, ball_colors
+from configuration import ball_radius, court_length, court_width, number_of_balls, ball_colors
 
 # 3D plotting
 def set_axes_equal(ax):
@@ -61,10 +61,11 @@ def plot_trajectory(traj_3d,corners_actual):
 # 2D plotting
 def display_current_score_board(current_ball_positions):
     # Create plot
-    plt.ylim(0,court_width)
-    plt.xlim(0,court_length)
-    plt.title('Score Board')
+    
     fig, current_score_board = plt.subplots(figsize=(5, 2.7))
+    #plt.ylim(0,court_width)
+    #plt.xlim(0,court_length)
+    
 
     # Plot balls
     for ball in range(0, number_of_balls):
@@ -72,21 +73,37 @@ def display_current_score_board(current_ball_positions):
             current_score_board.plot(current_ball_positions[ball], '%s' %ball_colors[ball], label='Ball %i' %ball)
     
     current_score_board.legend()
-    ball_distances = get_distances_from_center_ball(current_ball_positions)
+    ball_distances, center_ball_position = get_distances_from_center_ball(current_ball_positions)
     closest_ball, closest_ball_distance = find_closest_ball(ball_distances)
     
     # Calculate and display score   
-    score = calculate_score(ball_positions)
-    at = AnchoredText("Team 1: %i \n Team 2: %i)" %score[0] %score[1], prop=dict(size=15), frameon=True, loc='upper left')
+    score = calculate_score(current_ball_positions)
+    at = AnchoredText("Team 1: %i \n" %score[0] + "Team 2: %i" %score[1], prop=dict(size=15), frameon=True, loc='upper left')
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     current_score_board.plot([current_ball_positions[-1], current_ball_positions[closest_ball]], '-k')
     return
 
-def animate_score_board(ball_positions):
-    for i in range(0, len(ball_positions[0])): # maybe use something else on upper range
-        display_current_score_board(ball_positions[i]) 
-        cv.wait(2)
+def update_score_board(current_ball_positions, court_area):
+    for ball in range(0, number_of_balls):
+        if not pos_out_of_bounds(current_ball_positions[ball]):
+            circle = plt.Circle(current_ball_positions[ball], ball_radius, color='%s' %ball_colors[ball], label='Ball %i' %ball)
+            court_area.add_patch(circle)
+            plt.draw()
+    court_area.legend()
     return
+
+def animate_score_board(ball_positions):
+    score_board = plt.figure()
+    plt.title('Score Board')
+    court_area = plt.axes(xlim=(0, court_length), ylim=(0, court_width))
+    
+    for frame in range(0, len(ball_positions[0])): # maybe use something else on upper range
+        court_area.clear()
+        current_ball_positions = get_current_ball_positions(ball_positions, frame)
+        update_score_board(current_ball_positions, court_area) 
+        plt.pause(0.2)
+    return
+
 
 # OUTDATED
 ## 2d scoring plot

@@ -3,8 +3,8 @@ import numpy as np
 import math
 import imutils
 from configuration import *
-#from visualization import animate_score_board
-#from game_scores import calculate_score
+from visualization import animate_score_board
+from game_scores import calculate_score
 from visualization import plot_trajectory
 from rectify_court import get_court_homography
 from ball_detection import get_image_trajectories, get_court_mask
@@ -62,23 +62,27 @@ r_max = round(r_max*1.4)
 
 
 # Track balls in video
-ball_positions_im, ball_times, tracked_frames, ball_positions  = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt,court_mask,r_min,r_max)
+ball_positions_detected_im, ball_times, tracked_frames, ball_positions_im  = get_image_trajectories(game_video, H, court_ratio, frame_width, win_width, dt,court_mask,r_min,r_max)
 
 # Clean workspace
 game_video.release()
 
 # Manually select start and end points of parabolas
-all_keypoints = select_bounces(tracked_frames, ball_positions_im,win_width)
+all_keypoints = select_bounces(tracked_frames, ball_positions_detected_im,win_width)
 
 
 # 3D Trajectory estimation
-traj_3d = get_all_3d_segements(ball_positions_im, ball_times, all_keypoints, P)
+traj_3d = get_all_3d_segements(ball_positions_detected_im, ball_times, all_keypoints, P)
 
 
 # Plot results
 plot_trajectory(traj_3d,corners_actual)
 
 # Calculate scores
-#ball_positions = create_rectified_position_vector(ball_positions_im)
+#ball_positions_im_no_time = [[] for i in range(0,number_of_balls)]
+#for ball in range(0, number_of_balls):
+#    for i in range(0, len(ball_positions_im[ball])):
+#        ball_positions_im_no_time[ball].append(ball_positions_im[ball][i][0:3])
+#ball_positions = create_rectified_position_vector(ball_positions_im_no_time, H)
 #animate_score_board(ball_positions)
 
