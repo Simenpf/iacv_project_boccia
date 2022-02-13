@@ -79,7 +79,7 @@ def detect_balls(frame, detection_scaling, r_min, r_max):
     all_masks = cv.bitwise_or(frame_masks[0],frame_masks[1])
     all_masks = cv.bitwise_or(all_masks,frame_masks[2])
     all_masks = cv.bitwise_or(all_masks,frame_masks[3])
-    #all_masks = cv.bitwise_or(all_masks,frame_masks[4])
+    all_masks = cv.bitwise_or(all_masks,frame_masks[4])
 
 
 
