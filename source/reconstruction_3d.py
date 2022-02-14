@@ -1,4 +1,3 @@
-import imp
 import imutils
 import cv2 as cv
 import numpy as np
@@ -7,14 +6,14 @@ from configuration import g, delay_time, escape_key
 
 def generate_3d_trajectory(P, traj_2d, t):    
     A = calculate_A(P,traj_2d,t)
-    F = calculate_a(P,traj_2d,t)
-    E = init_states(A,F)
-    return real_3d_coordinate(E,traj_2d,t)
+    a = calculate_a(P,traj_2d,t)
+    q = init_states(A,a)
+    return real_3d_coordinate(q,traj_2d,t)
 
 
 def calculate_A(P, traj_2d, t):
     n = 2*len(traj_2d)
-    
+
     A_0 = [0]*n
     A_1 = [0]*n
     A_2 = [0]*n
