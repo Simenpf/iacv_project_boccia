@@ -7,8 +7,8 @@ from configuration import g, delay_time, escape_key
 def generate_3d_trajectory(P, traj_2d, t):    
     A = calculate_A(P,traj_2d,t)
     a = calculate_a(P,traj_2d,t)
-    q = init_states(A,a)
-    return real_3d_coordinate(q,traj_2d,t)
+    q = find_init_parameters(A,a)
+    return real_3d_coordinate(q,t)
 
 
 def calculate_A(P, traj_2d, t):
@@ -29,9 +29,9 @@ def calculate_A(P, traj_2d, t):
             A_4[2*j+i] = P[i, 2]      - traj_2d[j][i]*P[2,2]
             A_5[2*j+i] = P[i, 2]*t[j] - traj_2d[j][i]*P[2,2]*t[j]
 
-    D = np.array([A_0, A_1, A_2, A_3, A_4, A_5],dtype=np.float32)
-    D = D.T
-    return D
+    A = np.array([A_0, A_1, A_2, A_3, A_4, A_5],dtype=np.float32)
+    A = A.T
+    return A
 
 def calculate_a(P, traj_2d, t):
     n = 2*len(traj_2d)
@@ -41,13 +41,13 @@ def calculate_a(P, traj_2d, t):
             a[2*j+i] = traj_2d[j][i]*(0.5*P[2, 2]*g*pow(t[j],2)+1)-(0.5*P[i,2]*g*pow(t[j],2)+P[i,3])
     return a
 
-def init_states(A,a):
+def find_init_parameters(A,a):
     q = np.array(np.dot(np.linalg.pinv(A),a))
     return q
 
 # returns real world coordinates as list of X coordinates, list of Y coordinates, list of Z coordinates
-def real_3d_coordinate(q, traj_2d, t):
-    n = len(traj_2d)
+def real_3d_coordinate(q,t):
+    n = len(t)
     X = [0]*n
     Y = [0]*n
     Z = [0]*n
