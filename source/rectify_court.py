@@ -1,7 +1,7 @@
 import imutils
 import cv2 as cv
 import numpy as np
-from configuration import escape_key, delay_time, corners_auto, court_length, court_width
+from configuration import enter_key, delay_time, corners_auto, court_length, court_width
 from projective_funcs import transform_point
 
 
@@ -48,7 +48,7 @@ def get_court_homography(frame, win_width):
     # Continue showing frame until user presses enter
     while True:
         cv.imshow(title,frame_copy)
-        if cv.waitKey(delay_time) == escape_key:
+        if cv.waitKey(delay_time) == enter_key:
             cv.destroyAllWindows()
             break
 

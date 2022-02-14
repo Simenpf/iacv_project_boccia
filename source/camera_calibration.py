@@ -1,7 +1,7 @@
 import imutils
 import cv2 as cv
 import numpy as np
-from configuration import num_calibration_imgs, delay_time
+from configuration import num_calibration_imgs, delay_time, screen_width
 from rectify_court import get_court_homography
 
 
@@ -49,8 +49,8 @@ def getCameraIntrinsics(video,board_size,square_size):
                 img = cv.drawChessboardCorners(img, board_size, image_board_corners, success)
 
             # Show the image for manual supervision
-            window_img = imutils.resize(img,width=1000)
-            cv.imshow("Calibration",window_img)
+            window_img = imutils.resize(img, width=screen_width*0.5)
+            cv.imshow("Calibration", window_img)
             cv.waitKey(delay_time)
         else:
             break
@@ -62,14 +62,15 @@ def getCameraIntrinsics(video,board_size,square_size):
 
 # Function for retrieving the projection matrix based on camera intrinsics and a set of known points
 def getCameraProjectionMatrix(camera_intrinsics, distortion_coefficients, true_pts, img_pts):
-   _, rvec, tvec = cv.solvePnP(true_pts, img_pts, camera_intrinsics, distortion_coefficients)
-   R, _ = cv.Rodrigues(rvec)
-
-   RT = np.concatenate((R,tvec),axis=1)
-   P = camera_intrinsics.dot(RT)
-   P /= P[2,3]
-   return P
-
+    # Retrieve camera extrinsics
+    _, rvec, tvec = cv.solvePnP(true_pts, img_pts, camera_intrinsics, distortion_coefficients)
+    
+    # Linear algebra to obtain projection matrix
+    R, _ = cv.Rodrigues(rvec)
+    RT = np.concatenate((R,tvec),axis=1)
+    P = camera_intrinsics.dot(RT)
+    P /= P[2,3]
+    return P
 
 # Testing the functions
 #######################

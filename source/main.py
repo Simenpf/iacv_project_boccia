@@ -39,8 +39,9 @@ P = getCameraProjectionMatrix(K,distortion_parameters,corners_actual,corners_sel
 court_furthest_point = -2*court_length
 court_closest_point = court_length
 r_min, r_max = get_radius_range(ball_radius,P,court_furthest_point,court_closest_point)
-r_min = round(r_min*0.6)
-r_max = round(r_max*1.4)
+radius_padding = 0.4
+r_min = round(r_min*(1-radius_padding))
+r_max = round(r_max*(1+radius_padding))
 
 # Track balls in video
 court_ratio = court_width/court_length
@@ -61,5 +62,3 @@ traj_3d = get_all_3d_segements(ball_positions_detected_im, ball_times, all_keypo
 
 # Plot the results of the 3D trajectory estimation
 plot_trajectory(traj_3d,corners_actual)
-
-

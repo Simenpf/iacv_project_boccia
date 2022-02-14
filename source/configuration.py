@@ -60,7 +60,7 @@ yellow_hue = 27
 # Colors of the balls in (B,G,R)
 ball_colors_bgr = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,60),(60,220,60),(0,0,255),(0,0,255),(0,230,255)]
 
-escape_key = 13
+enter_key = 13
 delay_time = 25
 
 # Detection parameters
