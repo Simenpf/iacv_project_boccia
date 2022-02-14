@@ -3,8 +3,8 @@ import numpy as np
 # Media
 court_reference_frame_path = "../media/bocce_game_camera2_reference_frame.jpg"
 calibration_video_path     = '../media/calibration_video_camera2.mp4'
-#game_video_path            = '../../trimmed_trajs.mp4'
-game_video_path = '../media/blue_ball_trimmed.mp4'
+game_video_path            = '../../trimmed_for_score.mp4'
+#game_video_path = '../media/blue_ball_trimmed.mp4'
 
 # Pre-calculated values
 corners_auto = [[1430, 598],[1657, 837],[210, 875],[420, 620]]
@@ -62,4 +62,8 @@ ball_colors_bgr = [(200,170,80),(200,170,80),(50,160,240),(50,160,240),(60,220,6
 
 escape_key = 13
 delay_time = 25
+
+# Detection parameters
+circularity_threshold = 0.5
+hue_range = 4 # Range of included hues in both directions
 

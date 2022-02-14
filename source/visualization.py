@@ -2,7 +2,9 @@ import numpy as np
 from game_scores import *
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
+from matplotlib.animation import FuncAnimation
 from configuration import ball_radius, court_length, court_width, number_of_balls, ball_colors
+
 
 # 3D plotting
 def set_axes_equal(ax):
@@ -58,74 +60,47 @@ def plot_trajectory(traj_3d,corners_actual):
     plt.legend()
     plt.show()
 
-# 2D plotting
-def display_current_score_board(current_ball_positions):
-    # Create plot
-    
-    fig, current_score_board = plt.subplots(figsize=(5, 2.7))
-    #plt.ylim(0,court_width)
-    #plt.xlim(0,court_length)
-    
+def update_2dplot(frame):
+    pos = get_current_ball_positions(ball_positions,frame)
+    for i in range(0,len(balls)):
+        if not pos_out_of_bounds(pos[i]):
+            balls[i].center = (pos[i][0], pos[i][1])
 
-    # Plot balls
-    for ball in range(0, number_of_balls):
-        if not pos_out_of_bounds(current_ball_positions[ball]):
-            current_score_board.plot(current_ball_positions[ball], '%s' %ball_colors[ball], label='Ball %i' %ball)
-    
-    current_score_board.legend()
-    ball_distances, center_ball_position = get_distances_from_center_ball(current_ball_positions)
-    closest_ball, closest_ball_distance = find_closest_ball(ball_distances)
-    
-    # Calculate and display score   
-    score = calculate_score(current_ball_positions)
-    at = AnchoredText("Team 1: %i \n" %score[0] + "Team 2: %i" %score[1], prop=dict(size=15), frameon=True, loc='upper left')
-    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-    current_score_board.plot([current_ball_positions[-1], current_ball_positions[closest_ball]], '-k')
-    return
-
-def update_score_board(current_ball_positions, court_area):
-    for ball in range(0, number_of_balls):
-        if not pos_out_of_bounds(current_ball_positions[ball]):
-            circle = plt.Circle(current_ball_positions[ball], ball_radius, color='%s' %ball_colors[ball], label='Ball %i' %ball)
-            court_area.add_patch(circle)
-            plt.draw()
-    court_area.legend()
-    return
-
-def animate_score_board(ball_positions):
-    score_board = plt.figure()
-    plt.title('Score Board')
-    court_area = plt.axes(xlim=(0, court_length), ylim=(0, court_width))
-    
-    for frame in range(0, len(ball_positions[0])): # maybe use something else on upper range
-        court_area.clear()
-        current_ball_positions = get_current_ball_positions(ball_positions, frame)
-        update_score_board(current_ball_positions, court_area) 
-        plt.pause(0.2)
-    return
+    score = calculate_score(pos)
+    text.txt.set_text("Team 1: "+str(score[0])+"\n"+"Team 2: "+str(score[1]))
+    return balls[0],balls[1],balls[2],balls[3],balls[4],balls[5],balls[6],balls[7],balls[8], text
 
 
-# OUTDATED
-## 2d scoring plot
-#def create_score_board_frame(image_points, H):
-#    score_board_frame = []
-#
-#    #Define plot params (maybe move to animate plot function)
-#    plt.ylim(0,court_width)
-#    plt.xlim(0,court_length)
-#    plt.title('Score Board')
-#
-#    ball_pos_2d = create_rectified_position_vector(image_points, H)
-#
-#    for ball in range(0, number_of_balls):
-#        x = ball_pos_2d[ball][0]
-#        y = ball_pos_2d[ball][1]
-#        score_board_frame = plt.plot(x,y)
-#
-#    # Calculate and display score   
-#    score = calculate_score(image_points, H)
-#    at = AnchoredText("Team 1: %i \n Team 2: %i)" %score[0] %score[1], prop=dict(size=15), frameon=True, loc='upper left')
-#    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-#    
-#    return score_board_frame
-#
+def init_2dplot():
+    for ball in balls:
+        ax.add_patch(ball)
+    text.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+    ax.add_artist(text)
+    return balls[0],balls[1],balls[2],balls[3],balls[4],balls[5],balls[6],balls[7],balls[8], text
+
+
+def plot_game(ball_positions_in):
+    global ax
+    global balls
+    global text
+    global ball_positions
+
+    ball_positions = ball_positions_in
+    fig = plt.figure(figsize=(5,10))
+    ax = plt.axes(xlim=(0, 390), ylim=(0, 202))
+    ax.set_aspect(1)
+
+    ball_radius = [5,5,5,5,5,5,5,5,2.5]
+
+    balls = []
+    for i in range(0,number_of_balls):
+        balls.append(plt.Circle((-1, -1), ball_radius[i], fc='%s' %ball_colors[i], ec='k')
+    )
+    text = AnchoredText("", prop=dict(size=15), frameon=True, loc='upper right')
+
+    ani = FuncAnimation(fig, update_2dplot, frames=len(ball_positions_in[0]),
+                        init_func=init_2dplot, blit=False,interval=50)
+    plt.show()
+
+
+

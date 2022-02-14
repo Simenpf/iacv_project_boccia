@@ -41,7 +41,8 @@ def find_closest_ball(ball_distances):
 def calculate_score(current_ball_positions):
     score = [0, 0]
     ball_distances, center_ball_position = get_distances_from_center_ball(current_ball_positions)
-    if pos_out_of_bounds(center_ball_position):
+    #if pos_out_of_bounds(center_ball_position):
+    if False:
         return [-1,-1]
     else:
         closest_ball, _ = find_closest_ball(ball_distances)
